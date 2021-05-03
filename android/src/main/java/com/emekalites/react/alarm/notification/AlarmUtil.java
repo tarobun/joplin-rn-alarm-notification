@@ -422,7 +422,7 @@ class AlarmUtil {
                     mChannel.setLightColor(Color.parseColor(color));
                 }
 
-                if(!mChannel.canBypassDnd()){
+                if (mChannel.canBypassDnd()) {
                     mChannel.setBypassDnd(alarm.isBypassDnd());
                 }
 
