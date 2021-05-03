@@ -15,6 +15,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import com.facebook.react.bridge.WritableMap;
@@ -79,10 +81,16 @@ class AlarmUtil {
         return (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void playAlarmSound(String name, String names, boolean shouldLoop, double volume) {
         float number = (float) volume;
 
-        MediaPlayer mediaPlayer = audioInterface.getSingletonMedia(name, names);
+        MediaPlayer mediaPlayer = audioInterface.getSingletonMedia(name, names,
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT) // TODO notification or alarm?
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build());
+
         mediaPlayer.setLooping(shouldLoop);
         mediaPlayer.setVolume(number, number);
         mediaPlayer.start();
@@ -96,7 +104,7 @@ class AlarmUtil {
                     mp.release();
                     Log.e(TAG, "release media player");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "Failed to release media player", e);
                 }
             }
         });

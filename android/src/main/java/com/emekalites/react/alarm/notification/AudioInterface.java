@@ -1,10 +1,15 @@
 package com.emekalites.react.alarm.notification;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +46,8 @@ class AudioInterface {
         return mContext;
     }
 
-    MediaPlayer getSingletonMedia(String soundName, String soundNames) {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    MediaPlayer getSingletonMedia(String soundName, String soundNames, AudioAttributes audioAttributes) {
         Log.e(TAG, "player: " + soundName + ", names: " + soundNames);
         if (player == null) {
             List<Integer> resIds = new ArrayList<Integer>();
@@ -60,16 +66,22 @@ class AudioInterface {
                 }
             }
 
-            int resId;
-            Log.e(TAG, "is null");
+            int audioSessionId;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                audioSessionId = mContext.getSystemService(AudioManager.class).generateAudioSessionId();
+            } else {
+                audioSessionId = ((AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE)).generateAudioSessionId();
+            }
+
             if (resIds.size() > 0) {
                 Random rand = new Random();
                 int n = rand.nextInt(resIds.size());
 
-                resId = resIds.get(n);
+                int resId = resIds.get(n);
 
-                player = MediaPlayer.create(get(), resId);
+                player = MediaPlayer.create(get(), resId, audioAttributes, audioSessionId);
             } else if (soundName != null && !soundName.equals("")) {
+                int resId;
                 if (mContext.getResources().getIdentifier(soundName, "raw", mContext.getPackageName()) != 0) {
                     resId = mContext.getResources().getIdentifier(soundName, "raw", mContext.getPackageName());
                 } else {
@@ -77,9 +89,9 @@ class AudioInterface {
                     resId = mContext.getResources().getIdentifier(soundName, "raw", mContext.getPackageName());
                 }
 
-                player = MediaPlayer.create(get(), resId);
+                player = MediaPlayer.create(get(), resId, audioAttributes, audioSessionId);
             } else {
-                player = MediaPlayer.create(get(), this.uri);
+                player = MediaPlayer.create(get(), this.uri, null, audioAttributes, audioSessionId);
             }
         }
 
@@ -94,7 +106,7 @@ class AudioInterface {
 
             player = null;
         } catch (Exception e) {
-            Log.e(TAG, "player not found");
+            Log.e(TAG, "player not found", e);
         }
     }
 }
