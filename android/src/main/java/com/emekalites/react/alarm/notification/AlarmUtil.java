@@ -87,7 +87,7 @@ class AlarmUtil {
 
         MediaPlayer mediaPlayer = audioInterface.getSingletonMedia(name, names,
                 new AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT) // TODO notification or alarm?
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build());
 
@@ -335,7 +335,7 @@ class AlarmUtil {
 
     private PendingIntent createOnDismissedIntent(Context context, int notificationId) {
         Intent intent = new Intent(context, AlarmDismissReceiver.class);
-        intent.putExtra(Constants.DISMISSED_NOTIFICATION_ID, notificationId);
+        intent.putExtra(Constants.NOTIFICATION_ID, notificationId);
         return PendingIntent.getBroadcast(context.getApplicationContext(), notificationId, intent, 0);
     }
 
@@ -390,7 +390,9 @@ class AlarmUtil {
             }
 
             Intent intent = new Intent(mContext, intentClass);
+            intent.setAction(Constants.NOTIFICATION_ACTION_CLICK);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.putExtra(Constants.NOTIFICATION_ID, alarm.getId());
 
             Bundle bundle = new Bundle();
             if (alarm.getData() != null && !alarm.getData().equals("")) {
@@ -399,7 +401,6 @@ class AlarmUtil {
                     String[] data = item.split("==>");
                     bundle.putString(data[0], data[1]);
                 }
-
                 intent.putExtras(bundle);
             }
 

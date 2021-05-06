@@ -1,8 +1,12 @@
 package com.emekalites.react.alarm.notification;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -11,6 +15,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -23,7 +28,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-public class ANModule extends ReactContextBaseJavaModule {
+public class ANModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private final static String TAG = ANModule.class.getCanonicalName();
     private AlarmUtil alarmUtil;
     private static ReactApplicationContext mReactContext;
@@ -34,6 +39,7 @@ public class ANModule extends ReactContextBaseJavaModule {
         super(reactContext);
         mReactContext = reactContext;
         alarmUtil = new AlarmUtil((Application) reactContext.getApplicationContext());
+        reactContext.addActivityEventListener(this);
     }
 
     static ReactApplicationContext getReactAppContext() {
@@ -214,5 +220,29 @@ public class ANModule extends ReactContextBaseJavaModule {
             string.append(key).append("==>").append(bundle.get(key)).append(";;");
         }
         return string.toString();
+    }
+
+    @Override
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction())) {
+            Bundle bundle = intent.getExtras();
+            try {
+                if (bundle != null) {
+                    JSONObject data = BundleJSONConverter.convertToJSON(bundle);
+                    mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                            .emit("OnNotificationOpened", data.toString());
+
+                    int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
+                    alarmUtil.doCancelAlarm(alarmId);
+                }
+            } catch (Exception e) {
+                Log.e(Constants.TAG, "Couldn't convert bundle to JSON", e);
+            }
+        }
     }
 }

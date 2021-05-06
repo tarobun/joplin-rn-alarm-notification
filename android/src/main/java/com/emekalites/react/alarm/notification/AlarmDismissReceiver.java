@@ -13,7 +13,7 @@ public class AlarmDismissReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
         try {
-            int notificationId = intent.getExtras().getInt(Constants.DISMISSED_NOTIFICATION_ID);
+            int notificationId = intent.getExtras().getInt(Constants.NOTIFICATION_ID);
             if (ANModule.getReactAppContext() != null) {
                 ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("OnNotificationDismissed", "{\"id\": \"" + notificationId + "\"}");
