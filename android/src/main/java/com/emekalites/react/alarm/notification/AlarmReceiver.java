@@ -74,6 +74,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                             Log.e(TAG, "alarm cancelled: " + alarm.toString());
 
                             // emit notification dismissed
+                            // TODO also send all user-provided args back
                             ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("OnNotificationDismissed", "{\"id\": \"" + alarm.getId() + "\"}");
 
                             alarmUtil.removeFiredNotification(alarm.getId());

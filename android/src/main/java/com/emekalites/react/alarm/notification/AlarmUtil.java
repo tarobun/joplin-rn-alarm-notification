@@ -18,7 +18,6 @@ import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -392,17 +391,9 @@ class AlarmUtil {
             Intent intent = new Intent(mContext, intentClass);
             intent.setAction(Constants.NOTIFICATION_ACTION_CLICK);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            intent.putExtra(Constants.NOTIFICATION_ID, alarm.getId());
 
-            Bundle bundle = new Bundle();
-            if (alarm.getData() != null && !alarm.getData().equals("")) {
-                String[] datum = alarm.getData().split(";;");
-                for (String item : datum) {
-                    String[] data = item.split("==>");
-                    bundle.putString(data[0], data[1]);
-                }
-                intent.putExtras(bundle);
-            }
+            intent.putExtra(Constants.NOTIFICATION_ID, alarm.getId());
+            intent.putExtra("data", alarm.getData());
 
             PendingIntent pendingIntent = PendingIntent.getActivity(mContext, notificationID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

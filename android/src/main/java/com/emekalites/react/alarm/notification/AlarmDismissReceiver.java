@@ -15,6 +15,7 @@ public class AlarmDismissReceiver extends BroadcastReceiver {
         try {
             int notificationId = intent.getExtras().getInt(Constants.NOTIFICATION_ID);
             if (ANModule.getReactAppContext() != null) {
+                // TODO also send all user-provided args back
                 ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("OnNotificationDismissed", "{\"id\": \"" + notificationId + "\"}");
             }

@@ -1,5 +1,7 @@
 package com.emekalites.react.alarm.notification;
 
+import android.os.Bundle;
+
 import java.io.Serializable;
 
 public class AlarmModel implements Serializable {
@@ -32,7 +34,7 @@ public class AlarmModel implements Serializable {
     private int intervalValue  = 1;
     private int snoozeInterval = 1;                       // in minutes
     private String tag;
-    private String data;
+    private Bundle data;
     private boolean loopSound = false;
     private boolean useBigText = false;
     private boolean hasButton = false;
@@ -241,11 +243,11 @@ public class AlarmModel implements Serializable {
         this.tag = tag;
     }
 
-    public String getData() {
+    public Bundle getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Bundle data) {
         this.data = data;
     }
 

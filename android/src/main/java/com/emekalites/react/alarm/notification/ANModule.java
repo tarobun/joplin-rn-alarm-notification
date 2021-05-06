@@ -71,7 +71,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         alarm.setColor(bundle.getString("color", "red"));
 
         Bundle data = bundle.getBundle("data");
-        alarm.setData(bundle2string(data));
+        alarm.setData(data);
 
         alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
         alarm.setLargeIcon(bundle.getString("large_icon", ""));
@@ -140,7 +140,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     }
 
     @ReactMethod
-    public void sendNotification(ReadableMap details) throws ParseException {
+    public void sendNotification(ReadableMap details) {
         Bundle bundle = Arguments.toBundle(details);
 
         AlarmModel alarm = new AlarmModel();
@@ -155,7 +155,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         alarm.setColor(bundle.getString("color", "red"));
 
         Bundle data = bundle.getBundle("data");
-        alarm.setData(bundle2string(data));
+        alarm.setData(data);
 
         alarm.setLargeIcon(bundle.getString("large_icon"));
         alarm.setLoopSound(bundle.getBoolean("loop_sound", false));
@@ -211,17 +211,6 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         promise.resolve(array);
     }
 
-    private static String bundle2string(Bundle bundle) {
-        if (bundle == null) {
-            return null;
-        }
-        StringBuilder string = new StringBuilder();
-        for (String key : bundle.keySet()) {
-            string.append(key).append("==>").append(bundle.get(key)).append(";;");
-        }
-        return string.toString();
-    }
-
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
 
@@ -233,9 +222,9 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             Bundle bundle = intent.getExtras();
             try {
                 if (bundle != null) {
-                    JSONObject data = BundleJSONConverter.convertToJSON(bundle);
+                    WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
                     mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                            .emit("OnNotificationOpened", data.toString());
+                            .emit("OnNotificationOpened", response);
 
                     int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
                     alarmUtil.doCancelAlarm(alarmId);
