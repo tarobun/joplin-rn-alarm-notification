@@ -49,6 +49,8 @@ class AudioInterface {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     MediaPlayer getSingletonMedia(String soundName, String soundNames, AudioAttributes audioAttributes) {
         Log.e(TAG, "player: " + soundName + ", names: " + soundNames);
+        // TODO if the player has been previously configured with different sound, it can never be changed
+        // this should be rewritten to reset the player if the sound has changed
         if (player == null) {
             List<Integer> resIds = new ArrayList<Integer>();
             if (soundNames != null && !soundNames.equals("")){
