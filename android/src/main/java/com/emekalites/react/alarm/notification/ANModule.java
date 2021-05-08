@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -29,8 +31,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class ANModule extends ReactContextBaseJavaModule implements ActivityEventListener {
-    private final static String TAG = ANModule.class.getCanonicalName();
-    private AlarmUtil alarmUtil;
+    private final AlarmUtil alarmUtil;
     private static ReactApplicationContext mReactContext;
 
     private static final String E_SCHEDULE_ALARM_FAILED = "E_SCHEDULE_ALARM_FAILED";
@@ -46,6 +47,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         return mReactContext;
     }
 
+    @NonNull
     @Override
     public String getName() {
         return "RNAlarmNotification";
@@ -222,16 +224,38 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             Bundle bundle = intent.getExtras();
             try {
                 if (bundle != null) {
+                    int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
+                    alarmUtil.doCancelAlarm(alarmId);
+                    alarmUtil.removeFiredNotification(alarmId);
+
                     WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
                     mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                             .emit("OnNotificationOpened", response);
-
-                    int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
-                    alarmUtil.doCancelAlarm(alarmId);
                 }
             } catch (Exception e) {
                 Log.e(Constants.TAG, "Couldn't convert bundle to JSON", e);
             }
         }
+    }
+
+    @ReactMethod
+    public void getAlarmInfo(Promise promise) {
+        if (getCurrentActivity() == null) {
+            promise.resolve(null);
+            return;
+        }
+
+        Intent intent = getCurrentActivity().getIntent();
+        if (intent != null) {
+            if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction()) &&
+                    intent.getExtras() != null) {
+                Bundle bundle = intent.getExtras();
+                WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
+                promise.resolve(response);
+                getCurrentActivity().setIntent(new Intent());
+                return;
+            }
+        }
+        promise.resolve(null);
     }
 }
