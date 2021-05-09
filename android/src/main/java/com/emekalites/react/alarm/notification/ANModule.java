@@ -118,7 +118,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
                 promise.resolve(map);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(Constants.TAG, "Could not schedule alarm", e);
                 promise.reject(E_SCHEDULE_ALARM_FAILED, e);
             }
         } else {
@@ -187,7 +187,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
             alarmUtil.sendNotification(alarm);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Could not send notification", e);
         }
     }
 

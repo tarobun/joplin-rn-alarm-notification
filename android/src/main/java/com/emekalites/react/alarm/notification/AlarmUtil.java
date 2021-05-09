@@ -42,7 +42,6 @@ import static com.emekalites.react.alarm.notification.Constants.NOTIFICATION_ACT
 import static com.emekalites.react.alarm.notification.Constants.NOTIFICATION_ACTION_SNOOZE;
 
 class AlarmUtil {
-    private static final String TAG = AlarmUtil.class.getSimpleName();
 
     private Context mContext;
     private AudioInterface audioInterface;
@@ -59,11 +58,11 @@ class AlarmUtil {
         String packageName = mContext.getPackageName();
         Intent launchIntent = mContext.getPackageManager().getLaunchIntentForPackage(packageName);
         String className = launchIntent.getComponent().getClassName();
-        Log.e(TAG, "main activity classname: " + className);
+        Log.d(Constants.TAG, "main activity classname: " + className);
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Could not load main activity class", e);
             return null;
         }
     }
@@ -101,9 +100,9 @@ class AlarmUtil {
                     mp.stop();
                     mp.reset();
                     mp.release();
-                    Log.e(TAG, "release media player");
+                    Log.i(Constants.TAG, "release media player");
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to release media player", e);
+                    Log.e(Constants.TAG, "Failed to release media player", e);
                 }
             }
         });
@@ -137,7 +136,7 @@ class AlarmUtil {
     void setAlarm(AlarmModel alarm) {
         Calendar calendar = getCalendarFromAlarm(alarm);
 
-        Log.e(TAG, alarm.getAlarmId() + " - " + calendar.getTime().toString());
+        Log.i(Constants.TAG, "Set alarm " + alarm);
 
         int alarmId = alarm.getAlarmId();
 
@@ -163,7 +162,7 @@ class AlarmUtil {
 
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
         } else {
-            Log.d(TAG, "Schedule type should either be once or repeat");
+            Log.w(Constants.TAG, "Schedule type should either be once or repeat");
             return;
         }
 
@@ -171,6 +170,8 @@ class AlarmUtil {
     }
 
     void snoozeAlarm(AlarmModel alarm) {
+        Log.i(Constants.TAG, "Snooze alarm: " + alarm.toString());
+
         Calendar calendar = getCalendarFromAlarm(alarm);
 
         this.stopAlarmSound();
@@ -186,8 +187,6 @@ class AlarmUtil {
 
         getAlarmDB().update(alarm);
 
-        Log.e(TAG, "snooze data - " + alarm.toString());
-
         int alarmId = alarm.getAlarmId();
 
         Intent intent = new Intent(mContext, AlarmReceiver.class);
@@ -212,7 +211,7 @@ class AlarmUtil {
 
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
         } else {
-            Log.d(TAG, "Schedule type should either be once or repeat");
+            Log.w(Constants.TAG, "Schedule type should either be once or repeat");
         }
     }
 
@@ -242,7 +241,7 @@ class AlarmUtil {
             AlarmModel alarm = getAlarmDB().getAlarm(id);
             this.cancelAlarm(alarm, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Could not cancel alarm with id " + id, e);
         }
     }
 
@@ -251,7 +250,7 @@ class AlarmUtil {
             AlarmModel alarm = getAlarmDB().getAlarm(id);
             this.cancelAlarm(alarm, true);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Could not delete alarm with id " + id, e);
         }
     }
 
@@ -264,7 +263,7 @@ class AlarmUtil {
                 this.stopAlarm(alarm);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Could not delete repeating alarm with id " + id, e);
         }
     }
 
@@ -343,7 +342,7 @@ class AlarmUtil {
             Class intentClass = getMainActivityClass();
 
             if (intentClass == null) {
-                Log.e(TAG, "No activity class found for the notification");
+                Log.e(Constants.TAG, "No activity class found for the notification");
                 return;
             }
 
@@ -365,14 +364,14 @@ class AlarmUtil {
             // message
             String message = alarm.getMessage();
             if (message == null || message.equals("")) {
-                Log.d(TAG, "Cannot send to notification centre because there is no 'message' found");
+                Log.e(Constants.TAG, "Cannot send to notification centre because there is no 'message' found");
                 return;
             }
 
             // channel
             String channelID = alarm.getChannel();
             if (channelID == null || channelID.equals("")) {
-                Log.d(TAG, "Cannot send to notification centre because there is no 'channel' found");
+                Log.e(Constants.TAG, "Cannot send to notification centre because there is no 'channel' found");
                 return;
             }
 
@@ -491,11 +490,11 @@ class AlarmUtil {
             if (tag != null && !tag.equals("")) {
                 mNotificationManager.notify(tag, notificationID, notification);
             } else {
-                Log.e(TAG, "notification done");
+                Log.i(Constants.TAG, "Notification done");
                 mNotificationManager.notify(notificationID, notification);
             }
         } catch (Exception e) {
-            Log.e(TAG, "failed to send notification", e);
+            Log.e(Constants.TAG, "Failed to send notification", e);
         }
     }
 
@@ -504,7 +503,7 @@ class AlarmUtil {
             AlarmModel alarm = getAlarmDB().getAlarm(id);
             getNotificationManager().cancel(alarm.getAlarmId());
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Could not remove fired notification with id " + id, e);
         }
     }
 
@@ -514,14 +513,14 @@ class AlarmUtil {
 
     void stopAlarmSound() {
         try {
-            Log.e(TAG, "stop vibration and alarm sound");
+            Log.i(Constants.TAG, "Stop vibration and alarm sound");
             Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrator.hasVibrator()) {
                 vibrator.cancel();
             }
             audioInterface.stopPlayer();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Stop alarm sound error", e);
         }
     }
 
