@@ -225,8 +225,8 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             try {
                 if (bundle != null) {
                     int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
-                    alarmUtil.doCancelAlarm(alarmId);
                     alarmUtil.removeFiredNotification(alarmId);
+                    alarmUtil.doCancelAlarm(alarmId);
 
                     WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
                     mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -252,7 +252,16 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
                 Bundle bundle = intent.getExtras();
                 WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
                 promise.resolve(response);
+
+                // cleanup
+
+                // react-native-quick-actions does not expect the intent to be null so set an empty intent here
                 getCurrentActivity().setIntent(new Intent());
+
+                int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
+                alarmUtil.removeFiredNotification(alarmId);
+                alarmUtil.doCancelAlarm(alarmId);
+
                 return;
             }
         }
