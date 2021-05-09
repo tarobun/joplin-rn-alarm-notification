@@ -12,7 +12,6 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 
 public class AlarmDatabase extends SQLiteOpenHelper {
-    private static final String TAG = AlarmDatabase.class.getSimpleName();
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "rnandb";
@@ -58,7 +57,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             String data = cursor.getString(1);
             int active = cursor.getInt(2);
 
-            Log.e(TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
+            Log.d(Constants.TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
 
             Gson gson = new Gson();
 
@@ -66,8 +65,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             alarm.setId(id);
             alarm.setActive(active);
         } catch (Exception e) {
-            Log.e(TAG, "getAlarm: exception cause " + e.getCause() + " message " + e.getMessage());
-            e.printStackTrace();
+            Log.e(Constants.TAG, "getAlarm: exception", e);
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -88,14 +86,14 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             Gson gson = new Gson();
 
             String data = gson.toJson(alarm);
-            Log.e(TAG, "insert alarm: " + data);
+            Log.e(Constants.TAG, "insert alarm: " + data);
 
             values.put(COL_DATA, data);
             values.put(COL_ACTIVE, alarm.getActive());
 
             return (int) db.insert(TABLE_NAME, null, values);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Error inserting into DB", e);
             return 0;
         } finally {
             if (db != null) {
@@ -114,7 +112,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             Gson gson = new Gson();
 
             String data = gson.toJson(alarm);
-            Log.e(TAG, "update alarm: " + data);
+            Log.d(Constants.TAG, "update alarm: " + data);
 
             values.put(COL_ID, alarm.getId());
             values.put(COL_DATA, data);
@@ -123,7 +121,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             db.update(TABLE_NAME, values, where, null);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Error updating alarm " + alarm, e);
         } finally {
             if (db != null) {
                 db.close();
@@ -139,7 +137,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             db = this.getWritableDatabase();
             db.delete(TABLE_NAME, where, null);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.TAG, "Error deleting alarm with id " + id, e);
         } finally {
             if (db != null) {
                 db.close();
@@ -165,7 +163,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
                     String data = cursor.getString(1);
                     int active = cursor.getInt(2);
 
-                    Log.e(TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
+                    Log.d(Constants.TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
                     Gson gson = new Gson();
 
                     AlarmModel alarm = gson.fromJson(data, AlarmModel.class);
@@ -176,7 +174,7 @@ public class AlarmDatabase extends SQLiteOpenHelper {
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            Log.e(TAG, "getAlarmList: exception cause " + e.getCause() + " message " + e.getMessage());
+            Log.e(Constants.TAG, "getAlarmList: exception cause " + e.getCause() + " message " + e.getMessage());
         } finally {
             if (cursor != null) {
                 cursor.close();

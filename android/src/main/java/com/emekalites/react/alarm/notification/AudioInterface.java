@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Random;
 
 class AudioInterface {
-    private static final String TAG = AudioInterface.class.getSimpleName();
-
     private static MediaPlayer player;
     private static AudioInterface ourInstance = new AudioInterface();
     private Context mContext;
@@ -48,9 +46,6 @@ class AudioInterface {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     MediaPlayer getSingletonMedia(String soundName, String soundNames, AudioAttributes audioAttributes) {
-        Log.e(TAG, "player: " + soundName + ", names: " + soundNames);
-        // TODO if the player has been previously configured with different sound, it can never be changed
-        // this should be rewritten to reset the player if the sound has changed
         if (player == null) {
             List<Integer> resIds = new ArrayList<Integer>();
             if (soundNames != null && !soundNames.equals("")){
@@ -102,13 +97,15 @@ class AudioInterface {
 
     void stopPlayer() {
         try {
-            player.stop();
+            if (player.isPlaying()) {
+                player.stop();
+            }
             player.reset();
             player.release();
 
             player = null;
         } catch (Exception e) {
-            Log.e(TAG, "player not found", e);
+            Log.e(Constants.TAG, "player not found", e);
         }
     }
 }

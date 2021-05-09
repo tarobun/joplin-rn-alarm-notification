@@ -11,11 +11,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.util.ArrayList;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    private static final String TAG = AlarmReceiver.class.getSimpleName();
-
-    AlarmModel alarm;
-
-    int id;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -26,43 +21,38 @@ public class AlarmReceiver extends BroadcastReceiver {
             try {
                 String intentType = intent.getExtras().getString("intentType");
                 if (Constants.ADD_INTENT.equals(intentType)) {
-                    id = intent.getExtras().getInt("PendingId");
-
+                    int id = intent.getExtras().getInt("PendingId");
                     try {
-                        alarm = alarmDB.getAlarm(id);
-
+                        AlarmModel alarm = alarmDB.getAlarm(id);
                         alarmUtil.sendNotification(alarm);
-
-                        ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
                         alarmUtil.setBootReceiver();
-
-                        Log.d(TAG, "alarm start: " + alarm.toString() + ", alarms left: " + alarms.size());
+                        ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
+                        Log.d(Constants.TAG, "alarm start: " + alarm.toString() + ", alarms left: " + alarms.size());
                     } catch (Exception e) {
                         alarmUtil.stopAlarmSound();
-                        e.printStackTrace();
+                        Log.e(Constants.TAG, "Failed to add alarm", e);
                     }
                 }
-
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(Constants.TAG, "Received invalid intent", e);
             }
 
             String action = intent.getAction();
             if (action != null) {
-                Log.e(TAG, "ACTION: " + action);
+                Log.i(Constants.TAG, "ACTION: " + action);
                 switch (action) {
                     case Constants.NOTIFICATION_ACTION_SNOOZE:
-                        id = intent.getExtras().getInt("SnoozeAlarmId");
+                        int id = intent.getExtras().getInt("SnoozeAlarmId");
 
                         try {
-                            alarm = alarmDB.getAlarm(id);
+                            AlarmModel alarm = alarmDB.getAlarm(id);
                             alarmUtil.snoozeAlarm(alarm);
-                            Log.e(TAG, "alarm snoozed: " + alarm.toString());
+                            Log.i(Constants.TAG, "alarm snoozed: " + alarm.toString());
 
                             alarmUtil.removeFiredNotification(alarm.getId());
                         } catch (Exception e) {
                             alarmUtil.stopAlarmSound();
-                            e.printStackTrace();
+                            Log.e(Constants.TAG, "Failed to snooze alarm", e);
                         }
                         break;
 
@@ -70,8 +60,8 @@ public class AlarmReceiver extends BroadcastReceiver {
                         id = intent.getExtras().getInt("AlarmId");
 
                         try {
-                            alarm = alarmDB.getAlarm(id);
-                            Log.e(TAG, "alarm cancelled: " + alarm.toString());
+                            AlarmModel alarm = alarmDB.getAlarm(id);
+                            Log.e(Constants.TAG, "alarm cancelled: " + alarm.toString());
 
                             // emit notification dismissed
                             // TODO also send all user-provided args back
@@ -82,7 +72,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                             alarmUtil.cancelAlarm(alarm, false);
                         } catch (Exception e) {
                             alarmUtil.stopAlarmSound();
-                            e.printStackTrace();
+                            Log.e(Constants.TAG, "Failed to dismiss alarm", e);
                         }
                         break;
                 }
