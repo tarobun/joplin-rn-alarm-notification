@@ -34,7 +34,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 import static com.emekalites.react.alarm.notification.Constants.ADD_INTENT;
@@ -109,19 +108,13 @@ class AlarmUtil {
     }
 
     boolean checkAlarm(ArrayList<AlarmModel> alarms, AlarmModel alarm) {
-        boolean contain = false;
         for (AlarmModel aAlarm : alarms) {
-            if (aAlarm.getHour() == alarm.getHour() && aAlarm.getMinute() == alarm.getMinute() && aAlarm.getDay() == alarm.getDay() && aAlarm.getMonth() == alarm.getMonth() && aAlarm.getYear() == alarm.getYear() && aAlarm.getActive() == 1) {
-                contain = true;
-                break;
+            if (aAlarm.isSameTime(alarm) && aAlarm.getActive() == 1) {
+                Toast.makeText(mContext, "You have already set this Alarm", Toast.LENGTH_SHORT).show();
+                return true;
             }
         }
-
-        if (contain) {
-            Toast.makeText(mContext, "You have already set this Alarm", Toast.LENGTH_SHORT).show();
-        }
-
-        return contain;
+        return false;
     }
 
     void setBootReceiver() {
@@ -134,10 +127,9 @@ class AlarmUtil {
     }
 
     void setAlarm(AlarmModel alarm) {
-        Calendar calendar = getCalendarFromAlarm(alarm);
-
         Log.i(Constants.TAG, "Set alarm " + alarm);
 
+        Calendar calendar = alarm.getAlarmDateTime();
         int alarmId = alarm.getAlarmId();
 
         Intent intent = new Intent(mContext, AlarmReceiver.class);
@@ -159,7 +151,6 @@ class AlarmUtil {
             }
         } else if (scheduleType.equals("repeat")) {
             long interval = this.getInterval(alarm.getInterval(), alarm.getIntervalValue());
-
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
         } else {
             Log.w(Constants.TAG, "Schedule type should either be once or repeat");
@@ -172,19 +163,15 @@ class AlarmUtil {
     void snoozeAlarm(AlarmModel alarm) {
         Log.i(Constants.TAG, "Snooze alarm: " + alarm.toString());
 
-        Calendar calendar = getCalendarFromAlarm(alarm);
-
         this.stopAlarmSound();
 
-        // set snooze interval
-        calendar.add(Calendar.MINUTE, alarm.getSnoozeInterval());
-
-        setAlarmFromCalendar(alarm, calendar);
+        Calendar calendar = alarm.snooze();
 
         long time = System.currentTimeMillis() / 1000;
 
         alarm.setAlarmId((int) time);
-
+        // TODO looks like this sets a new id and then tries to update the row in DB
+        // how's that supposed to work?
         getAlarmDB().update(alarm);
 
         int alarmId = alarm.getAlarmId();
@@ -288,26 +275,6 @@ class AlarmUtil {
         this.stopAlarmSound();
 
         this.setBootReceiver();
-    }
-
-    Calendar getCalendarFromAlarm(AlarmModel alarm) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
-        calendar.set(Calendar.MINUTE, alarm.getMinute());
-        calendar.set(Calendar.SECOND, alarm.getSecond());
-        calendar.set(Calendar.DAY_OF_MONTH, alarm.getDay());
-        calendar.set(Calendar.MONTH, alarm.getMonth() - 1);
-        calendar.set(Calendar.YEAR, alarm.getYear());
-        return calendar;
-    }
-
-    void setAlarmFromCalendar(AlarmModel alarm, Calendar calendar) {
-        alarm.setSecond(calendar.get(Calendar.SECOND));
-        alarm.setMinute(calendar.get(Calendar.MINUTE));
-        alarm.setHour(calendar.get(Calendar.HOUR_OF_DAY));
-        alarm.setDay(calendar.get(Calendar.DAY_OF_MONTH));
-        alarm.setMonth(calendar.get(Calendar.MONTH) + 1);
-        alarm.setYear(calendar.get(Calendar.YEAR));
     }
 
     private void enableBootReceiver(Context context) {

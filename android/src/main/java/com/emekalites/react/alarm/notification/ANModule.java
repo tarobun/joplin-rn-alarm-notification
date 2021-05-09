@@ -23,13 +23,9 @@ import com.google.gson.Gson;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 
+@SuppressWarnings("unused")
 public class ANModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private final AlarmUtil alarmUtil;
     private static ReactApplicationContext mReactContext;
@@ -58,56 +54,14 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     }
 
     @ReactMethod
-    public void scheduleAlarm(ReadableMap details, Promise promise) throws ParseException {
-        Bundle bundle = Arguments.toBundle(details);
+    public void scheduleAlarm(ReadableMap details, Promise promise) {
+        try {
+            Bundle bundle = Arguments.toBundle(details);
+            AlarmModel alarm = AlarmModel.fromBundle(bundle);
 
-        AlarmModel alarm = new AlarmModel();
-
-        long time = System.currentTimeMillis() / 1000;
-
-        alarm.setAlarmId((int) time);
-
-        alarm.setActive(1);
-        alarm.setAutoCancel(bundle.getBoolean("auto_cancel", true));
-        alarm.setChannel(bundle.getString("channel", "my_channel_id"));
-        alarm.setColor(bundle.getString("color", "red"));
-
-        Bundle data = bundle.getBundle("data");
-        alarm.setData(data);
-
-        alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
-        alarm.setLargeIcon(bundle.getString("large_icon", ""));
-        alarm.setLoopSound(bundle.getBoolean("loop_sound", false));
-        alarm.setMessage(bundle.getString("message", "My Notification Message"));
-        alarm.setPlaySound(bundle.getBoolean("play_sound", true));
-        alarm.setScheduleType(bundle.getString("schedule_type", "once"));
-        alarm.setSmallIcon(bundle.getString("small_icon", "ic_launcher"));
-        alarm.setSnoozeInterval((int) bundle.getDouble("snooze_interval", 1.0));
-        alarm.setSoundName(bundle.getString("sound_name", null));
-        alarm.setSoundNames(bundle.getString("sound_names", null));
-        alarm.setTag(bundle.getString("tag", ""));
-        alarm.setTicker(bundle.getString("ticker", ""));
-        alarm.setTitle(bundle.getString("title", "My Notification Title"));
-        alarm.setVibrate(bundle.getBoolean("vibrate", true));
-        alarm.setHasButton(bundle.getBoolean("has_button", false));
-        alarm.setVibration((int) bundle.getDouble("vibration", 100.0));
-        alarm.setUseBigText(bundle.getBoolean("use_big_text", false));
-        alarm.setVolume(bundle.getDouble("volume", 0.5));
-        alarm.setIntervalValue((int) bundle.getDouble("interval_value", 1));
-        alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
-
-        String datetime = bundle.getString("fire_date");
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.ENGLISH);
-        Calendar calendar = new GregorianCalendar();
-
-        calendar.setTime(sdf.parse(datetime));
-
-        alarmUtil.setAlarmFromCalendar(alarm, calendar);
-
-        // check if alarm has been set at this time
-        boolean containAlarm = alarmUtil.checkAlarm(getAlarmDB().getAlarmList(1), alarm);
-        if (!containAlarm) {
-            try {
+            // check if alarm has been set at this time
+            boolean containAlarm = alarmUtil.checkAlarm(getAlarmDB().getAlarmList(1), alarm);
+            if (!containAlarm) {
                 int id = getAlarmDB().insert(alarm);
                 alarm.setId(id);
 
@@ -117,12 +71,12 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
                 map.putInt("id", id);
 
                 promise.resolve(map);
-            } catch (Exception e) {
-                Log.e(Constants.TAG, "Could not schedule alarm", e);
-                promise.reject(E_SCHEDULE_ALARM_FAILED, e);
+            } else {
+                promise.reject(E_SCHEDULE_ALARM_FAILED, "duplicate alarm set at date");
             }
-        } else {
-            promise.reject(E_SCHEDULE_ALARM_FAILED, "duplicate alarm set at date");
+        } catch (Exception e) {
+            Log.e(Constants.TAG, "Could not schedule alarm", e);
+            promise.reject(E_SCHEDULE_ALARM_FAILED, e);
         }
     }
 
@@ -143,45 +97,10 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
     @ReactMethod
     public void sendNotification(ReadableMap details) {
-        Bundle bundle = Arguments.toBundle(details);
-
-        AlarmModel alarm = new AlarmModel();
-
-        long time = System.currentTimeMillis() / 1000;
-
-        alarm.setAlarmId((int) time);
-
-        alarm.setActive(1);
-        alarm.setAutoCancel(bundle.getBoolean("auto_cancel", true));
-        alarm.setChannel(bundle.getString("channel", "my_channel_id"));
-        alarm.setColor(bundle.getString("color", "red"));
-
-        Bundle data = bundle.getBundle("data");
-        alarm.setData(data);
-
-        alarm.setLargeIcon(bundle.getString("large_icon"));
-        alarm.setLoopSound(bundle.getBoolean("loop_sound", false));
-        alarm.setMessage(bundle.getString("message", "My Notification Message"));
-        alarm.setPlaySound(bundle.getBoolean("play_sound", true));
-        alarm.setSmallIcon(bundle.getString("small_icon", "ic_launcher"));
-        alarm.setSnoozeInterval((int) bundle.getDouble("snooze_interval", 1));
-        alarm.setSoundName(bundle.getString("sound_name"));
-        alarm.setSoundNames(bundle.getString("sound_names"));
-        alarm.setTag(bundle.getString("tag"));
-        alarm.setTicker(bundle.getString("ticker"));
-        alarm.setTitle(bundle.getString("title", "My Notification Title"));
-        alarm.setVibrate(bundle.getBoolean("loop_sound", true));
-        alarm.setHasButton(bundle.getBoolean("has_button", false));
-        alarm.setVibration((int) bundle.getDouble("vibration", 100));
-        alarm.setUseBigText(bundle.getBoolean("use_big_text", false));
-        alarm.setVolume(bundle.getDouble("volume", 0.5));
-        alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
-
-        Calendar calendar = new GregorianCalendar();
-
-        alarmUtil.setAlarmFromCalendar(alarm, calendar);
-
         try {
+            Bundle bundle = Arguments.toBundle(details);
+            AlarmModel alarm = AlarmModel.fromBundle(bundle);
+
             int id = getAlarmDB().insert(alarm);
             alarm.setId(id);
 

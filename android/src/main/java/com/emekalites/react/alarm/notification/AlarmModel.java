@@ -2,7 +2,14 @@ package com.emekalites.react.alarm.notification;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class AlarmModel implements Serializable {
     private int id;
@@ -16,32 +23,34 @@ public class AlarmModel implements Serializable {
     private int year;
 
     private int alarmId;
-    private String title = "My Notification Title";
-    private String message = "My Notification Message";
-    private String channel = "my_channel_id";
+    private String title;
+    private String message;
+    private String channel;
     private String ticker;
-    private boolean autoCancel = true;
-    private boolean vibrate = true;
-    private int vibration = 100;
-    private String smallIcon = "ic_launcher";
+    private boolean autoCancel;
+    private boolean vibrate;
+    private int vibration;
+    private String smallIcon;
     private String largeIcon;
-    private boolean playSound = true;
+    private boolean playSound;
     private String soundName;
-    private String soundNames;                 // separate sounds with comma eg (sound1.mp3,sound2.mp3)
-    private String color = "red";
-    private String scheduleType = "once";      // once or repeat
-    private String interval = "hourly";                       // hourly, daily, weekly
-    private int intervalValue  = 1;
-    private int snoozeInterval = 1;                       // in minutes
+    private String soundNames; // separate sounds with comma eg (sound1.mp3,sound2.mp3)
+    private String color;
+    private String scheduleType;
+    private String interval; // hourly, daily, weekly
+    private int intervalValue;
+    private int snoozeInterval;                       // in minutes
     private String tag;
     private Bundle data;
-    private boolean loopSound = false;
-    private boolean useBigText = false;
-    private boolean hasButton = false;
-    private double volume = 0.5;
-    private boolean bypassDnd = false;
+    private boolean loopSound;
+    private boolean useBigText;
+    private boolean hasButton;
+    private double volume;
+    private boolean bypassDnd;
 
     private int active = 1;         // 1 = yes, 0 = no
+
+    private AlarmModel() {}
 
     public int getId() {
         return id;
@@ -311,6 +320,7 @@ public class AlarmModel implements Serializable {
         this.bypassDnd = bypassDnd;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "AlarmModel{" +
@@ -348,5 +358,87 @@ public class AlarmModel implements Serializable {
                 ", bypassDnd=" + bypassDnd +
                 ", active=" + active +
                 '}';
+    }
+
+    public static AlarmModel fromBundle(@NonNull Bundle bundle) {
+        AlarmModel alarm = new AlarmModel();
+
+        long time = System.currentTimeMillis() / 1000;
+        alarm.setAlarmId((int) time);
+
+        alarm.setActive(1);
+        alarm.setAutoCancel(bundle.getBoolean("auto_cancel", true));
+        alarm.setChannel(bundle.getString("channel", "my_channel_id"));
+        alarm.setColor(bundle.getString("color", "red"));
+
+        Bundle data = bundle.getBundle("data");
+        alarm.setData(data);
+
+        alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
+        alarm.setLargeIcon(bundle.getString("large_icon", ""));
+        alarm.setLoopSound(bundle.getBoolean("loop_sound", false));
+        alarm.setMessage(bundle.getString("message", "My Notification Message"));
+        alarm.setPlaySound(bundle.getBoolean("play_sound", true));
+        alarm.setScheduleType(bundle.getString("schedule_type", "once"));
+        alarm.setSmallIcon(bundle.getString("small_icon", "ic_launcher"));
+        alarm.setSnoozeInterval((int) bundle.getDouble("snooze_interval", 1.0));
+        alarm.setSoundName(bundle.getString("sound_name", null));
+        alarm.setSoundNames(bundle.getString("sound_names", null));
+        alarm.setTag(bundle.getString("tag", ""));
+        alarm.setTicker(bundle.getString("ticker", ""));
+        alarm.setTitle(bundle.getString("title", "My Notification Title"));
+        alarm.setVibrate(bundle.getBoolean("vibrate", true));
+        alarm.setHasButton(bundle.getBoolean("has_button", false));
+        alarm.setVibration((int) bundle.getDouble("vibration", 100.0));
+        alarm.setUseBigText(bundle.getBoolean("use_big_text", false));
+        alarm.setVolume(bundle.getDouble("volume", 0.5));
+        alarm.setIntervalValue((int) bundle.getDouble("interval_value", 1));
+        alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
+
+        String datetime = bundle.getString("fire_date");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.ENGLISH);
+        Calendar calendar = new GregorianCalendar();
+
+        try {
+            calendar.setTime(sdf.parse(datetime));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        alarm.setAlarmDateTime(calendar);
+        return alarm;
+    }
+
+    void setAlarmDateTime(Calendar calendar) {
+        setSecond(calendar.get(Calendar.SECOND));
+        setMinute(calendar.get(Calendar.MINUTE));
+        setHour(calendar.get(Calendar.HOUR_OF_DAY));
+        setDay(calendar.get(Calendar.DAY_OF_MONTH));
+        setMonth(calendar.get(Calendar.MONTH) + 1);
+        setYear(calendar.get(Calendar.YEAR));
+    }
+
+    Calendar getAlarmDateTime() {
+        Calendar calendar = new GregorianCalendar();
+        calendar.set(Calendar.HOUR_OF_DAY, getHour());
+        calendar.set(Calendar.MINUTE, getMinute());
+        calendar.set(Calendar.SECOND, getSecond());
+        calendar.set(Calendar.DAY_OF_MONTH, getDay());
+        calendar.set(Calendar.MONTH, getMonth() - 1);
+        calendar.set(Calendar.YEAR, getYear());
+        return calendar;
+    }
+
+    Calendar snooze() {
+        Calendar calendar = getAlarmDateTime();
+        calendar.add(Calendar.MINUTE, getSnoozeInterval());
+        setAlarmDateTime(calendar);
+        return calendar;
+    }
+    
+    boolean isSameTime(AlarmModel alarm) {
+        return this.getHour() == alarm.getHour() && this.getMinute() == alarm.getMinute() &&
+                this.getSecond() == alarm.getSecond() && this.getDay() == alarm.getDay() &&
+                this.getMonth() == alarm.getMonth() && this.getYear() == alarm.getYear();
     }
 }
