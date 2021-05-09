@@ -26,11 +26,12 @@ public class AlarmReceiver extends BroadcastReceiver {
                         AlarmModel alarm = alarmDB.getAlarm(id);
                         alarmUtil.sendNotification(alarm);
                         alarmUtil.setBootReceiver();
+
                         ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
                         Log.d(Constants.TAG, "alarm start: " + alarm.toString() + ", alarms left: " + alarms.size());
                     } catch (Exception e) {
-                        alarmUtil.stopAlarmSound();
                         Log.e(Constants.TAG, "Failed to add alarm", e);
+                        alarmUtil.stopAlarmSound();
                     }
                 }
             } catch (Exception e) {
@@ -61,18 +62,17 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                         try {
                             AlarmModel alarm = alarmDB.getAlarm(id);
-                            Log.e(Constants.TAG, "alarm cancelled: " + alarm.toString());
+                            Log.i(Constants.TAG, "Cancel alarm: " + alarm.toString());
 
                             // emit notification dismissed
                             // TODO also send all user-provided args back
                             ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("OnNotificationDismissed", "{\"id\": \"" + alarm.getId() + "\"}");
 
                             alarmUtil.removeFiredNotification(alarm.getId());
-                            
-                            alarmUtil.cancelAlarm(alarm, false);
+                            alarmUtil.cancelAlarm(alarm, false); // TODO why false?
                         } catch (Exception e) {
-                            alarmUtil.stopAlarmSound();
                             Log.e(Constants.TAG, "Failed to dismiss alarm", e);
+                            alarmUtil.stopAlarmSound();
                         }
                         break;
                 }

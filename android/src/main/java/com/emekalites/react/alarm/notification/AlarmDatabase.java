@@ -22,10 +22,12 @@ public class AlarmDatabase extends SQLiteOpenHelper {
     private static final String COL_DATA = "gson_data";
     private static final String COL_ACTIVE = "active";
 
-    private String CREATE_TABLE_ALARM = "CREATE TABLE " + TABLE_NAME + " ("
+    private final String CREATE_TABLE_ALARM = "CREATE TABLE " + TABLE_NAME + " ("
             + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + COL_DATA + " TEXT, "
             + COL_ACTIVE + " INTEGER) ";
+
+    private final Gson gson = new Gson();
 
     AlarmDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -46,11 +48,9 @@ public class AlarmDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         AlarmModel alarm = null;
 
-        String selectQuery = "SELECT * FROM " +TABLE_NAME+ " WHERE " + COL_ID + " = " + _id;
+        String selectQuery = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_ID + " = " + _id;
 
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        try {
+        try (Cursor cursor = db.rawQuery(selectQuery, null)) {
             cursor.moveToFirst();
 
             int id = cursor.getInt(0);
@@ -59,34 +59,24 @@ public class AlarmDatabase extends SQLiteOpenHelper {
 
             Log.d(Constants.TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
 
-            Gson gson = new Gson();
 
             alarm = gson.fromJson(data, AlarmModel.class);
             alarm.setId(id);
             alarm.setActive(active);
         } catch (Exception e) {
             Log.e(Constants.TAG, "getAlarm: exception", e);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
 
         return alarm;
     }
 
     int insert(AlarmModel alarm) {
-        SQLiteDatabase db = null;
 
-        try {
-            db = this.getWritableDatabase();
-
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
             ContentValues values = new ContentValues();
 
-            Gson gson = new Gson();
-
             String data = gson.toJson(alarm);
-            Log.e(Constants.TAG, "insert alarm: " + data);
+            Log.i(Constants.TAG, "insert alarm: " + data);
 
             values.put(COL_DATA, data);
             values.put(COL_ACTIVE, alarm.getActive());
@@ -95,21 +85,13 @@ public class AlarmDatabase extends SQLiteOpenHelper {
         } catch (Exception e) {
             Log.e(Constants.TAG, "Error inserting into DB", e);
             return 0;
-        } finally {
-            if (db != null) {
-                db.close();
-            }
         }
     }
 
     void update(AlarmModel alarm) {
-        SQLiteDatabase db = null;
         String where = COL_ID + " = " + alarm.getId();
-        try {
-            db = this.getWritableDatabase();
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
             ContentValues values = new ContentValues();
-
-            Gson gson = new Gson();
 
             String data = gson.toJson(alarm);
             Log.d(Constants.TAG, "update alarm: " + data);
@@ -122,26 +104,15 @@ public class AlarmDatabase extends SQLiteOpenHelper {
 
         } catch (Exception e) {
             Log.e(Constants.TAG, "Error updating alarm " + alarm, e);
-        } finally {
-            if (db != null) {
-                db.close();
-            }
         }
     }
 
     void delete(int id) {
-        SQLiteDatabase db = null;
         String where = COL_ID + "=" + id;
-
-        try {
-            db = this.getWritableDatabase();
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
             db.delete(TABLE_NAME, where, null);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Error deleting alarm with id " + id, e);
-        } finally {
-            if (db != null) {
-                db.close();
-            }
         }
     }
 
@@ -154,9 +125,8 @@ public class AlarmDatabase extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<AlarmModel> alarms = new ArrayList<>();
-        Cursor cursor = db.rawQuery(selectQuery, null);
 
-        try {
+        try (Cursor cursor = db.rawQuery(selectQuery, null)) {
             if (cursor.moveToFirst()) {
                 do {
                     int id = cursor.getInt(0);
@@ -164,7 +134,6 @@ public class AlarmDatabase extends SQLiteOpenHelper {
                     int active = cursor.getInt(2);
 
                     Log.d(Constants.TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
-                    Gson gson = new Gson();
 
                     AlarmModel alarm = gson.fromJson(data, AlarmModel.class);
                     alarm.setId(id);
@@ -175,10 +144,6 @@ public class AlarmDatabase extends SQLiteOpenHelper {
             }
         } catch (Exception e) {
             Log.e(Constants.TAG, "getAlarmList: exception cause " + e.getCause() + " message " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
 
         return alarms;

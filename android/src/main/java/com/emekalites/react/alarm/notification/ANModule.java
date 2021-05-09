@@ -82,7 +82,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         alarm.setPlaySound(bundle.getBoolean("play_sound", true));
         alarm.setScheduleType(bundle.getString("schedule_type", "once"));
         alarm.setSmallIcon(bundle.getString("small_icon", "ic_launcher"));
-        alarm.setSnoozeInterval((int)bundle.getDouble("snooze_interval", 1.0));
+        alarm.setSnoozeInterval((int) bundle.getDouble("snooze_interval", 1.0));
         alarm.setSoundName(bundle.getString("sound_name", null));
         alarm.setSoundNames(bundle.getString("sound_names", null));
         alarm.setTag(bundle.getString("tag", ""));
@@ -90,10 +90,10 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         alarm.setTitle(bundle.getString("title", "My Notification Title"));
         alarm.setVibrate(bundle.getBoolean("vibrate", true));
         alarm.setHasButton(bundle.getBoolean("has_button", false));
-        alarm.setVibration((int)bundle.getDouble("vibration", 100.0));
+        alarm.setVibration((int) bundle.getDouble("vibration", 100.0));
         alarm.setUseBigText(bundle.getBoolean("use_big_text", false));
         alarm.setVolume(bundle.getDouble("volume", 0.5));
-        alarm.setIntervalValue((int)bundle.getDouble("interval_value", 1));
+        alarm.setIntervalValue((int) bundle.getDouble("interval_value", 1));
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
 
         String datetime = bundle.getString("fire_date");
@@ -164,7 +164,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         alarm.setMessage(bundle.getString("message", "My Notification Message"));
         alarm.setPlaySound(bundle.getBoolean("play_sound", true));
         alarm.setSmallIcon(bundle.getString("small_icon", "ic_launcher"));
-        alarm.setSnoozeInterval((int)bundle.getDouble("snooze_interval", 1));
+        alarm.setSnoozeInterval((int) bundle.getDouble("snooze_interval", 1));
         alarm.setSoundName(bundle.getString("sound_name"));
         alarm.setSoundNames(bundle.getString("sound_names"));
         alarm.setTag(bundle.getString("tag"));
@@ -172,7 +172,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         alarm.setTitle(bundle.getString("title", "My Notification Title"));
         alarm.setVibrate(bundle.getBoolean("loop_sound", true));
         alarm.setHasButton(bundle.getBoolean("has_button", false));
-        alarm.setVibration((int)bundle.getDouble("vibration", 100));
+        alarm.setVibration((int) bundle.getDouble("vibration", 100));
         alarm.setUseBigText(bundle.getBoolean("use_big_text", false));
         alarm.setVolume(bundle.getDouble("volume", 0.5));
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
