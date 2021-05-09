@@ -315,7 +315,8 @@ class AlarmUtil {
         PackageManager pm = context.getPackageManager();
 
         int setting = pm.getComponentEnabledSetting(receiver);
-        if (setting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED) {
+        if (setting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED ||
+                setting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
             pm.setComponentEnabledSetting(receiver,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
