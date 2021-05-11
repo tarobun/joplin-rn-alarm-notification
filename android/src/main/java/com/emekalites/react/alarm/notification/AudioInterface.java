@@ -16,47 +16,31 @@ import java.util.List;
 import java.util.Random;
 
 class AudioInterface {
+    private final Uri DEFAULT_SOUND = Settings.System.DEFAULT_NOTIFICATION_URI;
+
     private static MediaPlayer player;
-    private static AudioInterface ourInstance = new AudioInterface();
-    private Context mContext;
-    private Uri uri;
+    private static final AudioInterface ourInstance = new AudioInterface();
 
     private AudioInterface() {
     }
 
-    private static Context get() {
-        return getInstance().getContext();
-    }
-
-    static synchronized AudioInterface getInstance() {
+    static AudioInterface getInstance() {
         return ourInstance;
     }
 
-    void init(Context context) {
-        uri = Settings.System.DEFAULT_ALARM_ALERT_URI;
-
-        if (mContext == null) {
-            this.mContext = context;
-        }
-    }
-
-    private Context getContext() {
-        return mContext;
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    MediaPlayer getSingletonMedia(String soundName, String soundNames, AudioAttributes audioAttributes) {
+    MediaPlayer getSingletonMedia(Context context, String soundName, String soundNames, AudioAttributes audioAttributes) {
         if (player == null) {
-            List<Integer> resIds = new ArrayList<Integer>();
+            List<Integer> resIds = new ArrayList<>();
             if (soundNames != null && !soundNames.equals("")){
                 String[] names = soundNames.split(",");
                 for (String item : names) {
                     int _resId;
-                    if (mContext.getResources().getIdentifier(item, "raw", mContext.getPackageName()) != 0) {
-                        _resId = mContext.getResources().getIdentifier(item, "raw", mContext.getPackageName());
+                    if (context.getResources().getIdentifier(item, "raw", context.getPackageName()) != 0) {
+                        _resId = context.getResources().getIdentifier(item, "raw", context.getPackageName());
                     } else {
                         String _item = item.substring(0, item.lastIndexOf('.'));
-                        _resId = mContext.getResources().getIdentifier(_item, "raw", mContext.getPackageName());
+                        _resId = context.getResources().getIdentifier(_item, "raw", context.getPackageName());
                     }
 
                     resIds.add(_resId);
@@ -65,9 +49,9 @@ class AudioInterface {
 
             int audioSessionId;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                audioSessionId = mContext.getSystemService(AudioManager.class).generateAudioSessionId();
+                audioSessionId = context.getSystemService(AudioManager.class).generateAudioSessionId();
             } else {
-                audioSessionId = ((AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE)).generateAudioSessionId();
+                audioSessionId = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE)).generateAudioSessionId();
             }
 
             if (resIds.size() > 0) {
@@ -76,19 +60,17 @@ class AudioInterface {
 
                 int resId = resIds.get(n);
 
-                player = MediaPlayer.create(get(), resId, audioAttributes, audioSessionId);
+                player = MediaPlayer.create(context, resId, audioAttributes, audioSessionId);
             } else if (soundName != null && !soundName.equals("")) {
                 int resId;
-                if (mContext.getResources().getIdentifier(soundName, "raw", mContext.getPackageName()) != 0) {
-                    resId = mContext.getResources().getIdentifier(soundName, "raw", mContext.getPackageName());
-                } else {
+                if (context.getResources().getIdentifier(soundName, "raw", context.getPackageName()) == 0) {
                     soundName = soundName.substring(0, soundName.lastIndexOf('.'));
-                    resId = mContext.getResources().getIdentifier(soundName, "raw", mContext.getPackageName());
                 }
+                resId = context.getResources().getIdentifier(soundName, "raw", context.getPackageName());
 
-                player = MediaPlayer.create(get(), resId, audioAttributes, audioSessionId);
+                player = MediaPlayer.create(context, resId, audioAttributes, audioSessionId);
             } else {
-                player = MediaPlayer.create(get(), this.uri, null, audioAttributes, audioSessionId);
+                player = MediaPlayer.create(context, this.DEFAULT_SOUND, null, audioAttributes, audioSessionId);
             }
         }
 

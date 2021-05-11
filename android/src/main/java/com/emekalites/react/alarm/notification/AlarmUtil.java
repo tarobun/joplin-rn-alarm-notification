@@ -42,47 +42,45 @@ import static com.emekalites.react.alarm.notification.Constants.NOTIFICATION_ACT
 
 class AlarmUtil {
 
-    private Context mContext;
-    private AudioInterface audioInterface;
-    static final long[] DEFAULT_VIBRATE_PATTERN = {0, 250, 250, 250};
+    private static final long[] DEFAULT_VIBRATE_PATTERN = {0, 250, 250, 250};
+
+    private final Context context;
+    private final AudioInterface audioInterface = AudioInterface.getInstance();
 
     AlarmUtil(Application context) {
-        mContext = context;
-
-        audioInterface = AudioInterface.getInstance();
-        audioInterface.init(mContext);
+        this.context = context;
     }
 
-    private Class getMainActivityClass() {
-        String packageName = mContext.getPackageName();
-        Intent launchIntent = mContext.getPackageManager().getLaunchIntentForPackage(packageName);
-        String className = launchIntent.getComponent().getClassName();
-        Log.d(Constants.TAG, "main activity classname: " + className);
+    private Class<?> getMainActivityClass() {
         try {
+            String packageName = context.getPackageName();
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+            String className = launchIntent.getComponent().getClassName();
+            Log.d(Constants.TAG, "main activity classname: " + className);
             return Class.forName(className);
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             Log.e(Constants.TAG, "Could not load main activity class", e);
             return null;
         }
     }
 
     private AlarmManager getAlarmManager() {
-        return (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        return (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
     private AlarmDatabase getAlarmDB() {
-        return new AlarmDatabase(mContext);
+        return new AlarmDatabase(context);
     }
 
     private NotificationManager getNotificationManager() {
-        return (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void playAlarmSound(String name, String names, boolean shouldLoop, double volume) {
         float number = (float) volume;
 
-        MediaPlayer mediaPlayer = audioInterface.getSingletonMedia(name, names,
+        MediaPlayer mediaPlayer = audioInterface.getSingletonMedia(context, name, names,
                 new AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -110,7 +108,7 @@ class AlarmUtil {
     boolean checkAlarm(ArrayList<AlarmModel> alarms, AlarmModel alarm) {
         for (AlarmModel aAlarm : alarms) {
             if (aAlarm.isSameTime(alarm) && aAlarm.getActive() == 1) {
-                Toast.makeText(mContext, "You have already set this Alarm", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "You have already set this Alarm", Toast.LENGTH_SHORT).show();
                 return true;
             }
         }
@@ -120,9 +118,9 @@ class AlarmUtil {
     void setBootReceiver() {
         ArrayList<AlarmModel> alarms = getAlarmDB().getAlarmList(1);
         if (alarms.size() > 0) {
-            enableBootReceiver(mContext);
+            enableBootReceiver(context);
         } else {
-            disableBootReceiver(mContext);
+            disableBootReceiver(context);
         }
     }
 
@@ -132,11 +130,11 @@ class AlarmUtil {
         Calendar calendar = alarm.getAlarmDateTime();
         int alarmId = alarm.getAlarmId();
 
-        Intent intent = new Intent(mContext, AlarmReceiver.class);
+        Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("intentType", ADD_INTENT);
         intent.putExtra("PendingId", alarm.getId());
 
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(mContext, alarmId, intent, 0);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, 0);
         AlarmManager alarmManager = this.getAlarmManager();
 
         String scheduleType = alarm.getScheduleType();
@@ -176,11 +174,11 @@ class AlarmUtil {
 
         int alarmId = alarm.getAlarmId();
 
-        Intent intent = new Intent(mContext, AlarmReceiver.class);
+        Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("intentType", ADD_INTENT);
         intent.putExtra("PendingId", alarm.getId());
 
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(mContext, alarmId, intent, 0);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, 0);
         AlarmManager alarmManager = this.getAlarmManager();
 
         String scheduleType = alarm.getScheduleType();
@@ -266,8 +264,8 @@ class AlarmUtil {
 
         int alarmId = alarm.getAlarmId();
 
-        Intent intent = new Intent(mContext, AlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(mContext, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(alarmIntent);
 
         getAlarmDB().delete(alarm.getId());
@@ -307,7 +305,7 @@ class AlarmUtil {
 
     void sendNotification(AlarmModel alarm) {
         try {
-            Class intentClass = getMainActivityClass();
+            Class<?> intentClass = getMainActivityClass();
 
             if (intentClass == null) {
                 Log.e(Constants.TAG, "No activity class found for the notification");
@@ -325,8 +323,8 @@ class AlarmUtil {
             // title
             String title = alarm.getTitle();
             if (title == null || title.equals("")) {
-                ApplicationInfo appInfo = mContext.getApplicationInfo();
-                title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
+                ApplicationInfo appInfo = context.getApplicationInfo();
+                title = context.getPackageManager().getApplicationLabel(appInfo).toString();
             }
 
             // message
@@ -343,8 +341,8 @@ class AlarmUtil {
                 return;
             }
 
-            Resources res = mContext.getResources();
-            String packageName = mContext.getPackageName();
+            Resources res = context.getResources();
+            String packageName = context.getPackageName();
 
             //icon
             int smallIconResId;
@@ -355,16 +353,16 @@ class AlarmUtil {
                 smallIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
             }
 
-            Intent intent = new Intent(mContext, intentClass);
+            Intent intent = new Intent(context, intentClass);
             intent.setAction(Constants.NOTIFICATION_ACTION_CLICK);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
             intent.putExtra(Constants.NOTIFICATION_ID, alarm.getId());
             intent.putExtra("data", alarm.getData());
 
-            PendingIntent pendingIntent = PendingIntent.getActivity(mContext, notificationID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mContext, channelID)
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelID)
                     .setSmallIcon(smallIconResId)
                     .setContentTitle(title)
                     .setContentText(message)
@@ -374,9 +372,9 @@ class AlarmUtil {
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
                     .setSound(null)
-                    .setDeleteIntent(createOnDismissedIntent(mContext, alarm.getId()));
+                    .setDeleteIntent(createOnDismissedIntent(context, alarm.getId()));
 
-            long vibration = (long) alarm.getVibration();
+            long vibration = alarm.getVibration();
 
             long[] vibrationPattern = vibration == 0 ? DEFAULT_VIBRATE_PATTERN : new long[]{0, vibration, 1000, vibration};
 
@@ -397,7 +395,7 @@ class AlarmUtil {
 
                 // play vibration
                 if (alarm.isVibrate()) {
-                    Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                    Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                     if (vibrator.hasVibrator()) {
                         vibrator.vibrate(VibrationEffect.createWaveform(vibrationPattern, 0));
                     }
@@ -421,17 +419,17 @@ class AlarmUtil {
             mBuilder.setContentIntent(pendingIntent);
 
             if (alarm.isHasButton()) {
-                Intent dismissIntent = new Intent(mContext, AlarmReceiver.class);
+                Intent dismissIntent = new Intent(context, AlarmReceiver.class);
                 dismissIntent.setAction(NOTIFICATION_ACTION_DISMISS);
                 dismissIntent.putExtra("AlarmId", alarm.getId());
-                PendingIntent pendingDismiss = PendingIntent.getBroadcast(mContext, notificationID, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingDismiss = PendingIntent.getBroadcast(context, notificationID, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Action dismissAction = new NotificationCompat.Action(android.R.drawable.ic_lock_idle_alarm, "DISMISS", pendingDismiss);
                 mBuilder.addAction(dismissAction);
 
-                Intent snoozeIntent = new Intent(mContext, AlarmReceiver.class);
+                Intent snoozeIntent = new Intent(context, AlarmReceiver.class);
                 snoozeIntent.setAction(NOTIFICATION_ACTION_SNOOZE);
                 snoozeIntent.putExtra("SnoozeAlarmId", alarm.getId());
-                PendingIntent pendingSnooze = PendingIntent.getBroadcast(mContext, notificationID, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingSnooze = PendingIntent.getBroadcast(context, notificationID, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Action snoozeAction = new NotificationCompat.Action(R.drawable.ic_snooze, "SNOOZE", pendingSnooze);
                 mBuilder.addAction(snoozeAction);
             }
@@ -482,7 +480,7 @@ class AlarmUtil {
     void stopAlarmSound() {
         try {
             Log.i(Constants.TAG, "Stop vibration and alarm sound");
-            Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrator.hasVibrator()) {
                 vibrator.cancel();
             }
