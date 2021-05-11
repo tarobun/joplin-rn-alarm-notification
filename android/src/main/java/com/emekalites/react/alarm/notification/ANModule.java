@@ -174,7 +174,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
                 // cleanup
 
-                // react-native-quick-actions does not expect the intent to be null so set an empty intent here
+                // other libs may not expect the intent to be null so set an empty intent here
                 getCurrentActivity().setIntent(new Intent());
 
                 int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
