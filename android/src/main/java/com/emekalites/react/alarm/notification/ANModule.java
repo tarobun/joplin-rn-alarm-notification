@@ -91,11 +91,6 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     }
 
     @ReactMethod
-    public void stopAlarmSound() {
-        alarmUtil.stopAlarmSound();
-    }
-
-    @ReactMethod
     public void sendNotification(ReadableMap details) {
         try {
             Bundle bundle = Arguments.toBundle(details);

@@ -31,7 +31,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                         Log.d(Constants.TAG, "alarm start: " + alarm.toString() + ", alarms left: " + alarms.size());
                     } catch (Exception e) {
                         Log.e(Constants.TAG, "Failed to add alarm", e);
-                        alarmUtil.stopAlarmSound();
                     }
                 }
             } catch (Exception e) {
@@ -52,7 +51,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                             alarmUtil.removeFiredNotification(alarm.getId());
                         } catch (Exception e) {
-                            alarmUtil.stopAlarmSound();
                             Log.e(Constants.TAG, "Failed to snooze alarm", e);
                         }
                         break;
@@ -72,7 +70,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                             alarmUtil.cancelAlarm(alarm, false); // TODO why false?
                         } catch (Exception e) {
                             Log.e(Constants.TAG, "Failed to dismiss alarm", e);
-                            alarmUtil.stopAlarmSound();
                         }
                         break;
                 }

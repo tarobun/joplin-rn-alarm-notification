@@ -15,15 +15,12 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
+import android.media.AudioManager;
+import android.media.RingtoneManager;
 import android.os.Build;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import com.facebook.react.bridge.WritableMap;
@@ -45,7 +42,6 @@ class AlarmUtil {
     private static final long[] DEFAULT_VIBRATE_PATTERN = {0, 250, 250, 250};
 
     private final Context context;
-    private final AudioInterface audioInterface = AudioInterface.getInstance();
 
     AlarmUtil(Application context) {
         this.context = context;
@@ -74,35 +70,6 @@ class AlarmUtil {
 
     private NotificationManager getNotificationManager() {
         return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void playAlarmSound(String name, String names, boolean shouldLoop, double volume) {
-        float number = (float) volume;
-
-        MediaPlayer mediaPlayer = audioInterface.getSingletonMedia(context, name, names,
-                new AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build());
-
-        mediaPlayer.setLooping(shouldLoop);
-        mediaPlayer.setVolume(number, number);
-        mediaPlayer.start();
-
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                try {
-                    mp.stop();
-                    mp.reset();
-                    mp.release();
-                    Log.i(Constants.TAG, "release media player");
-                } catch (Exception e) {
-                    Log.e(Constants.TAG, "Failed to release media player", e);
-                }
-            }
-        });
     }
 
     boolean checkAlarm(ArrayList<AlarmModel> alarms, AlarmModel alarm) {
@@ -160,8 +127,6 @@ class AlarmUtil {
 
     void snoozeAlarm(AlarmModel alarm) {
         Log.i(Constants.TAG, "Snooze alarm: " + alarm.toString());
-
-        this.stopAlarmSound();
 
         Calendar calendar = alarm.snooze();
 
@@ -270,8 +235,6 @@ class AlarmUtil {
 
         getAlarmDB().delete(alarm.getId());
 
-        this.stopAlarmSound();
-
         this.setBootReceiver();
     }
 
@@ -310,11 +273,6 @@ class AlarmUtil {
             if (intentClass == null) {
                 Log.e(Constants.TAG, "No activity class found for the notification");
                 return;
-            }
-
-            boolean playSound = alarm.isPlaySound();
-            if (playSound) {
-                this.playAlarmSound(alarm.getSoundName(), alarm.getSoundNames(), alarm.isLoopSound(), alarm.getVolume());
             }
 
             NotificationManager mNotificationManager = getNotificationManager();
@@ -374,6 +332,12 @@ class AlarmUtil {
                     .setSound(null)
                     .setDeleteIntent(createOnDismissedIntent(context, alarm.getId()));
 
+            if (alarm.isPlaySound()) {
+                // TODO use user-supplied sound if available
+//                mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), AudioManager.STREAM_NOTIFICATION);
+            }
+
             long vibration = alarm.getVibration();
 
             long[] vibrationPattern = vibration == 0 ? DEFAULT_VIBRATE_PATTERN : new long[]{0, vibration, 1000, vibration};
@@ -391,14 +355,9 @@ class AlarmUtil {
                     mChannel.setBypassDnd(alarm.isBypassDnd());
                 }
 
-                mChannel.setVibrationPattern(null);
-
-                // play vibration
                 if (alarm.isVibrate()) {
-                    Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-                    if (vibrator.hasVibrator()) {
-                        vibrator.vibrate(VibrationEffect.createWaveform(vibrationPattern, 0));
-                    }
+                    mChannel.setVibrationPattern(vibrationPattern);
+                    mChannel.enableVibration(true);
                 }
 
                 mNotificationManager.createNotificationChannel(mChannel);
@@ -475,19 +434,6 @@ class AlarmUtil {
 
     void removeAllFiredNotifications() {
         getNotificationManager().cancelAll();
-    }
-
-    void stopAlarmSound() {
-        try {
-            Log.i(Constants.TAG, "Stop vibration and alarm sound");
-            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-            if (vibrator.hasVibrator()) {
-                vibrator.cancel();
-            }
-            audioInterface.stopPlayer();
-        } catch (Exception e) {
-            Log.e(Constants.TAG, "Stop alarm sound error", e);
-        }
     }
 
     ArrayList<AlarmModel> getAlarms() {
