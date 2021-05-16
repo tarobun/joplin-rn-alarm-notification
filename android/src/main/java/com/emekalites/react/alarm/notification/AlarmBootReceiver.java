@@ -12,23 +12,21 @@ public class AlarmBootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            Log.i(Constants.TAG, "Rescheduling after boot!");
-            AlarmDatabase alarmDB = null;
-            try {
-                alarmDB = new AlarmDatabase(context);
-                ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
-                AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
+        Log.i(Constants.TAG, "Rescheduling after boot: " + intent);
+        AlarmDatabase alarmDB = null;
+        try {
+            alarmDB = new AlarmDatabase(context);
+            ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
+            AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
 
-                for (AlarmModel alarm : alarms) {
-                    alarmUtil.setAlarm(alarm);
-                }
-            } catch (Exception e) {
-                Log.e(Constants.TAG, "Could not reschedule alarms on boot", e);
-            } finally {
-                if (alarmDB != null) {
-                    alarmDB.close();
-                }
+            for (AlarmModel alarm : alarms) {
+                alarmUtil.setAlarm(alarm);
+            }
+        } catch (Exception e) {
+            Log.e(Constants.TAG, "Could not reschedule alarms on boot", e);
+        } finally {
+            if (alarmDB != null) {
+                alarmDB.close();
             }
         }
     }
