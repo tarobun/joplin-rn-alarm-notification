@@ -289,6 +289,7 @@ class AlarmUtil {
             }
 
             // message
+            // TODO move to AlarmModel constructor?
             String message = alarm.getMessage();
             if (message == null || message.equals("")) {
                 Log.e(Constants.TAG, "Cannot send to notification centre because there is no 'message' found");
@@ -296,6 +297,7 @@ class AlarmUtil {
             }
 
             // channel
+            // TODO move to AlarmModel constructor?
             String channelID = alarm.getChannel();
             if (channelID == null || channelID.equals("")) {
                 Log.e(Constants.TAG, "Cannot send to notification centre because there is no 'channel' found");
@@ -306,6 +308,7 @@ class AlarmUtil {
             String packageName = context.getPackageName();
 
             //icon
+            // TODO move to AlarmModel constructor?
             int smallIconResId;
             String smallIcon = alarm.getSmallIcon();
             if (smallIcon != null && !smallIcon.equals("")) {
