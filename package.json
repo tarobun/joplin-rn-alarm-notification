@@ -1,16 +1,9 @@
 {
   "name": "joplin-rn-alarm-notification",
   "title": "React Native Alarm Notification for Joplin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "schedule alarm with notification in react-native",
   "main": "index.js",
-  "files": [
-    "README.md",
-    "android",
-    "index.js",
-    "ios",
-    "react-native-alarm-notification.podspec"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/roman-r-m/react-native-alarm-notification.git",
