@@ -1,7 +1,7 @@
 {
-  "name": "react-native-alarm-notification",
-  "title": "React Native Alarm Notification",
-  "version": "1.7.1",
+  "name": "joplin-rn-alarm-notification",
+  "title": "React Native Alarm Notification for Joplin",
+  "version": "1.0.0",
   "description": "schedule alarm with notification in react-native",
   "main": "index.js",
   "files": [
@@ -11,23 +11,10 @@
     "ios",
     "react-native-alarm-notification.podspec"
   ],
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/emekalites/react-native-alarm-notification.git",
-    "baseUrl": "https://github.com/emekalites/react-native-alarm-notification"
-  },
-  "keywords": [
-    "react-native",
-    "alarm",
-    "notification",
-    "alarm notification"
-  ],
-  "author": {
-    "name": "Chukwuemeka Ihedoro",
-    "email": "caihedoro@gmail.com"
+    "url": "git+https://github.com/roman-r-m/react-native-alarm-notification.git",
+    "baseUrl": "https://github.com/roman-r-m/react-native-alarm-notification"
   },
   "license": "MIT",
   "licenseFilename": "LICENSE",
