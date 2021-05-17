@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
-public class AlarmDatabase extends SQLiteOpenHelper {
+public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "rnandb";
