@@ -30,10 +30,10 @@ project.xcworkspace
 
 # Android/IntelliJ
 #
-build/
-.idea
-.gradle
-gradle/
+**/build/
+**/.idea
+**/.gradle/
+**/gradle/
 gradle*
 local.properties
 *.iml
