@@ -1,7 +1,7 @@
 {
   "name": "joplin-rn-alarm-notification",
   "title": "React Native Alarm Notification for Joplin",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "schedule alarm with notification in react-native",
   "main": "index.js",
   "repository": {
