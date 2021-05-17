@@ -243,13 +243,18 @@ class AlarmUtil {
         int setting = pm.getComponentEnabledSetting(receiver);
         if (setting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED ||
                 setting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
+            Log.i(Constants.TAG, "Enable boot receiver");
             pm.setComponentEnabledSetting(receiver,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
+        } else {
+            Log.i(Constants.TAG, "Boot receiver already enabled");
         }
     }
 
     private void disableBootReceiver(Context context) {
+        Log.i(Constants.TAG, "Disable boot receiver");
+
         ComponentName receiver = new ComponentName(context, AlarmBootReceiver.class);
         PackageManager pm = context.getPackageManager();
 
