@@ -42,9 +42,11 @@ class AlarmUtil {
     private static final long[] DEFAULT_VIBRATE_PATTERN = {0, 250, 250, 250};
 
     private final Context context;
+    private final AlarmDatabase alarmDB;
 
     AlarmUtil(Application context) {
         this.context = context;
+        this.alarmDB =  new AlarmDatabase(context);
     }
 
     private Class<?> getMainActivityClass() {
@@ -64,10 +66,6 @@ class AlarmUtil {
         return (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
-    private AlarmDatabase getAlarmDB() {
-        return new AlarmDatabase(context);
-    }
-
     private NotificationManager getNotificationManager() {
         return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
@@ -83,7 +81,7 @@ class AlarmUtil {
     }
 
     void setBootReceiver() {
-        ArrayList<AlarmModel> alarms = getAlarmDB().getAlarmList(1);
+        ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
         if (alarms.size() > 0) {
             enableBootReceiver(context);
         } else {
@@ -135,7 +133,7 @@ class AlarmUtil {
         alarm.setAlarmId((int) time);
         // TODO looks like this sets a new id and then tries to update the row in DB
         // how's that supposed to work?
-        getAlarmDB().update(alarm);
+        alarmDB.update(alarm);
 
         int alarmId = alarm.getAlarmId();
 
@@ -188,7 +186,7 @@ class AlarmUtil {
 
     void doCancelAlarm(int id) {
         try {
-            AlarmModel alarm = getAlarmDB().getAlarm(id);
+            AlarmModel alarm = alarmDB.getAlarm(id);
             this.cancelAlarm(alarm, false);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not cancel alarm with id " + id, e);
@@ -197,7 +195,7 @@ class AlarmUtil {
 
     void deleteAlarm(int id) {
         try {
-            AlarmModel alarm = getAlarmDB().getAlarm(id);
+            AlarmModel alarm = alarmDB.getAlarm(id);
             this.cancelAlarm(alarm, true);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not delete alarm with id " + id, e);
@@ -206,7 +204,7 @@ class AlarmUtil {
 
     void deleteRepeatingAlarm(int id) {
         try {
-            AlarmModel alarm = getAlarmDB().getAlarm(id);
+            AlarmModel alarm = alarmDB.getAlarm(id);
 
             String scheduleType = alarm.getScheduleType();
             if (scheduleType.equals("repeat")) {
@@ -233,7 +231,7 @@ class AlarmUtil {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(alarmIntent);
 
-        getAlarmDB().delete(alarm.getId());
+        alarmDB.delete(alarm.getId());
 
         this.setBootReceiver();
     }
@@ -334,7 +332,6 @@ class AlarmUtil {
 
             if (alarm.isPlaySound()) {
                 // TODO use user-supplied sound if available
-//                mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
                 mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), AudioManager.STREAM_NOTIFICATION);
             }
 
@@ -425,7 +422,7 @@ class AlarmUtil {
 
     void removeFiredNotification(int id) {
         try {
-            AlarmModel alarm = getAlarmDB().getAlarm(id);
+            AlarmModel alarm = alarmDB.getAlarm(id);
             getNotificationManager().cancel(alarm.getAlarmId());
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not remove fired notification with id " + id, e);
@@ -437,7 +434,7 @@ class AlarmUtil {
     }
 
     ArrayList<AlarmModel> getAlarms() {
-        return getAlarmDB().getAlarmList(1);
+        return alarmDB.getAlarmList(1);
     }
 
     WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
