@@ -332,25 +332,25 @@ public class AlarmModel implements Serializable {
                 ", month=" + month +
                 ", year=" + year +
                 ", alarmId=" + alarmId +
-                ", title='" + title + '\'' +
-                ", message='" + message + '\'' +
-                ", channel='" + channel + '\'' +
-                ", ticker='" + ticker + '\'' +
+                ", title='" + title + "\'" +
+                ", message='" + message + "\'" +
+                ", channel='" + channel + "\'" +
+                ", ticker='" + ticker + "\'" +
                 ", autoCancel=" + autoCancel +
                 ", vibrate=" + vibrate +
                 ", vibration=" + vibration +
-                ", smallIcon='" + smallIcon + '\'' +
-                ", largeIcon='" + largeIcon + '\'' +
+                ", smallIcon='" + smallIcon + "\'" +
+                ", largeIcon='" + largeIcon + "\'" +
                 ", playSound=" + playSound +
-                ", soundName='" + soundName + '\'' +
-                ", soundNames='" + soundNames + '\'' +
-                ", color='" + color + '\'' +
-                ", scheduleType='" + scheduleType + '\'' +
+                ", soundName='" + soundName + "\'" +
+                ", soundNames='" + soundNames + "\'" +
+                ", color='" + color + "\'" +
+                ", scheduleType='" + scheduleType + "\'" +
                 ", interval=" + interval +
                 ", intervalValue=" + intervalValue +
                 ", snoozeInterval=" + snoozeInterval +
-                ", tag='" + tag + '\'' +
-                ", data='" + data + '\'' +
+                ", tag='" + tag + "\'" +
+                ", data='" + data + "\'" +
                 ", loopSound=" + loopSound +
                 ", useBigText=" + useBigText +
                 ", hasButton=" + hasButton +
@@ -372,7 +372,9 @@ public class AlarmModel implements Serializable {
         alarm.setColor(bundle.getString("color", "red"));
 
         Bundle data = bundle.getBundle("data");
-        alarm.setData(data);
+        if (data != null) {
+            alarm.setData(data);
+        }
 
         alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
         alarm.setLargeIcon(bundle.getString("large_icon", ""));
