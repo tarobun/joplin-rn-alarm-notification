@@ -41,7 +41,7 @@ public class AlarmModel implements Serializable {
     private int intervalValue;
     private int snoozeInterval; // in minutes
     private String tag;
-    private Bundle data;
+    private String data;
     private boolean loopSound;
     private boolean useBigText;
     private boolean hasButton;
@@ -252,11 +252,11 @@ public class AlarmModel implements Serializable {
         this.tag = tag;
     }
 
-    public Bundle getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(Bundle data) {
+    public void setData(String data) {
         this.data = data;
     }
 
@@ -371,8 +371,7 @@ public class AlarmModel implements Serializable {
         alarm.setChannel(bundle.getString("channel", "my_channel_id"));
         alarm.setColor(bundle.getString("color", "red"));
 
-        Bundle data = bundle.getBundle("data");
-        alarm.setData(data);
+        alarm.setData(bundle.getString("data"));
 
         alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
         alarm.setLargeIcon(bundle.getString("large_icon", ""));
