@@ -64,7 +64,7 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
             alarm.setId(id);
             alarm.setActive(active);
         } catch (Exception e) {
-            Log.e(Constants.TAG, "getAlarm: exception", e);
+            Log.e(Constants.TAG, "Error getting alarm with id " + _id, e);
         }
 
         return alarm;
