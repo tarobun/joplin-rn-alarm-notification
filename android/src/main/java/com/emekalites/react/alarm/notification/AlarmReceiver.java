@@ -15,6 +15,8 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent != null) {
+            Log.d(Constants.TAG, "Received intent URI", intent.toUri(0));
+            
             final AlarmDatabase alarmDB = new AlarmDatabase(context);
             AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
 
