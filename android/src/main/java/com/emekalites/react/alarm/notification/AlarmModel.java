@@ -39,7 +39,7 @@ public class AlarmModel implements Serializable {
     private String scheduleType;
     private String interval; // hourly, daily, weekly
     private int intervalValue;
-    private int snoozeInterval;                       // in minutes
+    private int snoozeInterval; // in minutes
     private String tag;
     private Bundle data;
     private boolean loopSound;
@@ -48,7 +48,7 @@ public class AlarmModel implements Serializable {
     private double volume;
     private boolean bypassDnd;
 
-    private int active = 1;         // 1 = yes, 0 = no
+    private int active = 1; // 1 = yes, 0 = no
 
     private AlarmModel() {}
 
@@ -372,9 +372,7 @@ public class AlarmModel implements Serializable {
         alarm.setColor(bundle.getString("color", "red"));
 
         Bundle data = bundle.getBundle("data");
-        if (data != null) {
-            alarm.setData(data);
-        }
+        alarm.setData(data);
 
         alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
         alarm.setLargeIcon(bundle.getString("large_icon", ""));

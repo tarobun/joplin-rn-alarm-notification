@@ -38,15 +38,13 @@ ReactNativeAN.scheduleAlarm = async (details) => {
 		throw new Error('interval value should be a number');
 	}
 
-	if (
-		repeatInterval === 'minutely' &&
+	if (repeatInterval === 'minutely' &&
 		(intervalValue < 1 || intervalValue > 59)
 	) {
 		throw new Error('interval value should be between 1 and 59 minutes');
 	}
 
-	if (
-		repeatInterval === 'hourly' &&
+	if (repeatInterval === 'hourly' &&
 		(intervalValue < 1 || intervalValue > 23)
 	) {
 		throw new Error('interval value should be between 1 and 23 hours');
@@ -63,7 +61,7 @@ ReactNativeAN.scheduleAlarm = async (details) => {
 		volume: details.volume || 0.5,
 		sound_name: details.sound_name || '',
 		snooze_interval: details.snooze_interval || 1,
-		data: details.data || '',
+		data: details.data || undefined,
 	};
 
 	return await RNAlarmNotification.scheduleAlarm(data);
@@ -79,7 +77,7 @@ ReactNativeAN.sendNotification = (details) => {
 		volume: details.volume || 0.5,
 		sound_name: details.sound_name || '',
 		snooze_interval: details.snooze_interval || 1,
-		data: details.data || '',
+		data: details.data || undefined,
 	};
 
 	RNAlarmNotification.sendNotification(data);

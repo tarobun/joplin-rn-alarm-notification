@@ -133,7 +133,7 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
                     String data = cursor.getString(1);
                     int active = cursor.getInt(2);
 
-                    Log.d(Constants.TAG, "get alarm -> id:" + id + ", active:" + active + ", " + data);
+                    Log.d(Constants.TAG, "get alarm (list) -> id:" + id + ", active:" + active + ", " + data);
 
                     AlarmModel alarm = gson.fromJson(data, AlarmModel.class);
                     alarm.setId(id);
