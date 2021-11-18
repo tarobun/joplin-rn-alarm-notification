@@ -61,7 +61,7 @@ ReactNativeAN.scheduleAlarm = async (details) => {
 		volume: details.volume || 0.5,
 		sound_name: details.sound_name || '',
 		snooze_interval: details.snooze_interval || 1,
-		data: details.data || undefined,
+		data: details.data || '',
 	};
 
 	return await RNAlarmNotification.scheduleAlarm(data);
@@ -77,7 +77,7 @@ ReactNativeAN.sendNotification = (details) => {
 		volume: details.volume || 0.5,
 		sound_name: details.sound_name || '',
 		snooze_interval: details.snooze_interval || 1,
-		data: details.data || undefined,
+		data: details.data || '',
 	};
 
 	RNAlarmNotification.sendNotification(data);
