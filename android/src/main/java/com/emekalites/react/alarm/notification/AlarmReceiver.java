@@ -26,7 +26,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         String intentType = intent.getExtras().getString("intentType");
         Log.i(Constants.TAG, "INTENT_TYPE: " + intentType);
 
-        if(Constants.ADD_INTENT.equals(intentType))
+        if(Constants.ADD_INTENT.equals(intentType)) {
             int id = intent.getExtras().getInt("PendingId");
 
             try {
