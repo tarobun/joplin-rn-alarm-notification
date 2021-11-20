@@ -138,16 +138,18 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     public void onNewIntent(Intent intent) {
         if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction())) {
             Bundle bundle = intent.getExtras();
-            try {
-                if (bundle != null) {
-                    int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
-                    alarmUtil.removeFiredNotification(alarmId);
-                    alarmUtil.cancelOnceAlarm(alarmId);
+            if (bundle == null) {
+                return;
+            }
 
-                    WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
-                    mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                            .emit("OnNotificationOpened", response);
-                }
+            try {
+                int id = bundle.getInt(Constants.NOTIFICATION_ALARM_ID);
+                alarmUtil.removeFiredNotification(id);
+                alarmUtil.cancelOnceAlarm(id);
+
+                WritableMap data = Arguments.fromBundle(bundle.getBundle("data"));
+                mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("OnNotificationOpened", data);
             } catch (Exception e) {
                 Log.e(Constants.TAG, "Couldn't convert bundle to JSON", e);
             }
@@ -162,25 +164,26 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         }
 
         Intent intent = getCurrentActivity().getIntent();
-        if (intent != null) {
-            if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction()) &&
-                    intent.getExtras() != null) {
-                Bundle bundle = intent.getExtras();
-                WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
-                promise.resolve(response);
-
-                // cleanup
-
-                // other libs may not expect the intent to be null so set an empty intent here
-                getCurrentActivity().setIntent(new Intent());
-
-                int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
-                alarmUtil.removeFiredNotification(alarmId);
-                alarmUtil.cancelOnceAlarm(alarmId);
-
-                return;
-            }
+        if (intent == null) {
+            promise.resolve(null);
+            return;
         }
-        promise.resolve(null);
+
+        if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction()) &&
+                intent.getExtras() != null) {
+
+            Bundle bundle = intent.getExtras();
+            WritableMap data = Arguments.fromBundle(bundle.getBundle("data"));
+            promise.resolve(data);
+
+            // cleanup
+
+            // other libs may not expect the intent to be null so set an empty intent here
+            getCurrentActivity().setIntent(new Intent());
+
+            int id = bundle.getInt(Constants.NOTIFICATION_ALARM_ID);
+            alarmUtil.removeFiredNotification(id);
+            alarmUtil.cancelOnceAlarm(id);
+        }
     }
 }
