@@ -26,23 +26,18 @@ public class AlarmReceiver extends BroadcastReceiver {
         String intentType = intent.getExtras().getString("intentType");
         Log.i(Constants.TAG, "INTENT_TYPE: " + intentType);
 
-        switch(intentType) {
-            case Constants.ADD_INTENT:
-                int id = intent.getExtras().getInt("PendingId");
+        if(Constants.ADD_INTENT.equals(intentType))
+            int id = intent.getExtras().getInt("PendingId");
 
-                try {
-                    AlarmModel alarm = alarmDB.getAlarm(id);
-                    alarmUtil.sendNotification(alarm);
-                    alarmUtil.setBootReceiver();
-                    Log.i(Constants.TAG, "alarm started: " + id);
-                } catch (Exception e) {
-                    Log.e(Constants.TAG, "Failed to add alarm", e);
-                }
-                break;
-
-            default:
-                Log.e(Constants.TAG, "Received unknown intentType: " + intentType);
-                break;
+            try {
+                AlarmModel alarm = alarmDB.getAlarm(id);
+                alarmUtil.sendNotification(alarm);
+                alarmUtil.setBootReceiver();
+                Log.i(Constants.TAG, "alarm started: " + id);
+            } catch (Exception e) {
+                Log.e(Constants.TAG, "Failed to add alarm", e);
+            }
+            return;
         }
 
         String action = intent.getAction();
