@@ -30,6 +30,7 @@ import java.util.ArrayList;
 public class ANModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private final AlarmUtil alarmUtil;
     private static ReactApplicationContext mReactContext;
+    private static AlarmDB alarmDB;
 
     private static final String E_SCHEDULE_ALARM_FAILED = "E_SCHEDULE_ALARM_FAILED";
 
@@ -37,6 +38,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         super(reactContext);
         mReactContext = reactContext;
         alarmUtil = new AlarmUtil((Application) reactContext.getApplicationContext());
+        alarmDB = new AlarmDatabase(mReactContext);
         reactContext.addActivityEventListener(this);
     }
 
@@ -50,10 +52,6 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         return "RNAlarmNotification";
     }
 
-    private AlarmDatabase getAlarmDB() {
-        return new AlarmDatabase(mReactContext);
-    }
-
     @ReactMethod
     public void scheduleAlarm(ReadableMap details, Promise promise) {
         try {
@@ -61,20 +59,21 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             AlarmModel alarm = AlarmModel.fromBundle(bundle);
 
             // check if alarm has been set at this time
-            boolean containAlarm = alarmUtil.checkAlarm(getAlarmDB().getAlarmList(1), alarm);
-            if (!containAlarm) {
-                int id = getAlarmDB().insert(alarm);
-                alarm.setId(id);
-
-                alarmUtil.setAlarm(alarm);
-
-                WritableMap map = Arguments.createMap();
-                map.putInt("id", id);
-
-                promise.resolve(map);
-            } else {
+            boolean containAlarm = alarmUtil.checkAlarm(alarmDB.getActiveAlarmList(), alarm);
+            if (containAlarm) {
                 promise.reject(E_SCHEDULE_ALARM_FAILED, "duplicate alarm set at date");
+                return;
             }
+
+            int id = alarmDB.insert(alarm);
+            alarm.setId(id);
+
+            alarmUtil.setAlarm(alarm);
+
+            WritableMap map = Arguments.createMap();
+            map.putInt("id", id);
+            promise.resolve(map);
+
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not schedule alarm", e);
             promise.reject(E_SCHEDULE_ALARM_FAILED, e);
@@ -97,7 +96,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             Bundle bundle = Arguments.toBundle(details);
             AlarmModel alarm = AlarmModel.fromBundle(bundle);
 
-            int id = getAlarmDB().insert(alarm);
+            int id = alarmDB.insert(alarm);
             alarm.setId(id);
 
             alarmUtil.sendNotification(alarm);

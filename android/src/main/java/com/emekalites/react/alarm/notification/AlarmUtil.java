@@ -103,21 +103,25 @@ class AlarmUtil {
         AlarmManager alarmManager = this.getAlarmManager();
 
         String scheduleType = alarm.getScheduleType();
+        switch(scheduleType) {
+            case "once":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                } else {
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                }
+                break;
+            
+            case "repeat":
+                long interval = this.getInterval(alarm.getInterval(), alarm.getIntervalValue());
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
+                break;
 
-        if (scheduleType.equals("once")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            } else {
-                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            }
-        } else if (scheduleType.equals("repeat")) {
-            long interval = this.getInterval(alarm.getInterval(), alarm.getIntervalValue());
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
-        } else {
-            Log.w(Constants.TAG, "Schedule type should either be once or repeat");
-            return;
+            default:
+                Log.w(Constants.TAG, "Schedule type should either be once or repeat");
+                return;
         }
 
         this.setBootReceiver();
@@ -130,12 +134,11 @@ class AlarmUtil {
 
         long time = System.currentTimeMillis() / 1000;
 
-        alarm.setAlarmId((int) time);
+        int alarmId = (int) time;
+        alarm.setAlarmId(alarmId);
         // TODO looks like this sets a new id and then tries to update the row in DB
         // how's that supposed to work?
         alarmDB.update(alarm);
-
-        int alarmId = alarm.getAlarmId();
 
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("intentType", ADD_INTENT);
@@ -145,21 +148,25 @@ class AlarmUtil {
         AlarmManager alarmManager = this.getAlarmManager();
 
         String scheduleType = alarm.getScheduleType();
+        switch(scheduleType) {
+            case "once":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                } else {
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                }
+                break;
 
-        if (scheduleType.equals("once")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            } else {
-                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            }
-        } else if (scheduleType.equals("repeat")) {
-            long interval = this.getInterval(alarm.getInterval(), alarm.getIntervalValue());
+            case "repeat"
+                long interval = this.getInterval(alarm.getInterval(), alarm.getIntervalValue());
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
+                break;
 
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
-        } else {
-            Log.w(Constants.TAG, "Schedule type should either be once or repeat");
+            default:
+                Log.w(Constants.TAG, "Schedule type should either be once or repeat");
+                break;
         }
     }
 
@@ -184,10 +191,9 @@ class AlarmUtil {
         return duration * 60 * 1000;
     }
 
-    void doCancelAlarm(int id) {
+    void cancelOnceAlarm(int id) {
         try {
-            AlarmModel alarm = alarmDB.getAlarm(id);
-            this.cancelAlarm(alarm, false);
+            this.deleteOnceAlarm(id);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not cancel alarm with id " + id, e);
         }
@@ -196,7 +202,7 @@ class AlarmUtil {
     void deleteAlarm(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
-            this.cancelAlarm(alarm, true);
+            this.stopAlarm(alarm);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not delete alarm with id " + id, e);
         }
@@ -205,7 +211,6 @@ class AlarmUtil {
     void deleteRepeatingAlarm(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
-
             String scheduleType = alarm.getScheduleType();
             if (scheduleType.equals("repeat")) {
                 this.stopAlarm(alarm);
@@ -215,10 +220,15 @@ class AlarmUtil {
         }
     }
 
-    void cancelAlarm(AlarmModel alarm, boolean delete) {
-        String scheduleType = alarm.getScheduleType();
-        if (scheduleType.equals("once") || delete) {
-            this.stopAlarm(alarm);
+    void deleteOnceAlarm(int id) {
+        try {
+            String scheduleType = alarm.getScheduleType();
+            if (scheduleType.equals("once")) {
+                AlarmModel alarm = alarmDB.getAlarm(id);
+                this.stopAlarm(alarm);
+            }
+        } catch (Exception e) {
+            Log.e(Constants.TAG, "Could not delete once alarm with id " + id, e);
         }
     }
 
@@ -242,7 +252,7 @@ class AlarmUtil {
 
         int setting = pm.getComponentEnabledSetting(receiver);
         if (setting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED ||
-                setting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
+            setting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
             Log.i(Constants.TAG, "Enable boot receiver");
             pm.setComponentEnabledSetting(receiver,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
@@ -432,6 +442,7 @@ class AlarmUtil {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
             getNotificationManager().cancel(alarm.getAlarmId());
+            Log.i(Constants.TAG, "Removed fired notification: " + alarm.getAlarmId().toString());
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not remove fired notification with id " + id, e);
         }
@@ -442,7 +453,7 @@ class AlarmUtil {
     }
 
     ArrayList<AlarmModel> getAlarms() {
-        return alarmDB.getAlarmList(1);
+        return alarmDB.getActiveAlarmList();
     }
 
     WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
