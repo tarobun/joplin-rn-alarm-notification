@@ -116,7 +116,15 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
         }
     }
 
-    ArrayList<AlarmModel> getAlarmList(int isActive) {
+    ArrayList<AlarmModel> getActiveAlarmList() {
+        return getAlarmList(1);
+    }
+    
+    ArrayList<AlarmModel> getInctiveAlarmList() {
+        return getAlarmList(0);
+    }
+
+    private ArrayList<AlarmModel> getAlarmList(int isActive) {
         String selectQuery = "SELECT * FROM " + TABLE_NAME;
 
         if (isActive == 1) {
