@@ -20,9 +20,9 @@ public class AlarmBootReceiver extends BroadcastReceiver {
             Log.i(Constants.TAG, "Rescheduling after boot, intent=" + intent);
 
             try (AlarmDatabase alarmDB = new AlarmDatabase(context)) {
-                ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
                 AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
 
+                ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
                 for (AlarmModel alarm : alarms) {
                     alarmUtil.setAlarm(alarm);
                 }
