@@ -118,7 +118,6 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
 
     ArrayList<AlarmModel> getActiveAlarmList() {
         String selectQuery = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_ACTIVE + " = 1";
-        }
 
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<AlarmModel> alarms = new ArrayList<>();
