@@ -29,7 +29,7 @@ import java.util.ArrayList;
 @SuppressWarnings("unused")
 public class ANModule extends ReactContextBaseJavaModule implements ActivityEventListener {
     private final AlarmUtil alarmUtil;
-    private final AlarmDB alarmDB;
+    private final AlarmDatabase alarmDB;
     private static ReactApplicationContext mReactContext;
 
     private static final String E_SCHEDULE_ALARM_FAILED = "E_SCHEDULE_ALARM_FAILED";
@@ -37,11 +37,11 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     ANModule(ReactApplicationContext reactContext) {
         super(reactContext);
         
-        this.mReactContext = reactContext;
-        this.alarmUtil = new AlarmUtil((Application) reactContext.getApplicationContext());
-        this.alarmDB = new AlarmDatabase(this.mReactContext);
+        mReactContext = reactContext;
+        alarmUtil = new AlarmUtil((Application) reactContext.getApplicationContext());
+        alarmDB = new AlarmDatabase(mReactContext);
 
-        this.mReactContext.addActivityEventListener(this);
+        mReactContext.addActivityEventListener(this);
     }
 
     static ReactApplicationContext getReactAppContext() {
@@ -61,16 +61,16 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             AlarmModel alarm = AlarmModel.fromBundle(bundle);
 
             // check if alarm has been set at this time
-            boolean containAlarm = this.alarmUtil.checkAlarm(alarmDB.getActiveAlarmList(), alarm);
+            boolean containAlarm = alarmUtil.checkAlarm(alarmDB.getActiveAlarmList(), alarm);
             if (containAlarm) {
                 promise.reject(E_SCHEDULE_ALARM_FAILED, "duplicate alarm set at date");
                 return;
             }
 
-            int id = this.alarmDB.insert(alarm);
+            int id = alarmDB.insert(alarm);
             alarm.setId(id);
 
-            this.alarmUtil.setAlarm(alarm);
+            alarmUtil.setAlarm(alarm);
 
             WritableMap map = Arguments.createMap();
             map.putInt("id", id);
@@ -84,12 +84,12 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
     @ReactMethod
     public void deleteAlarm(int alarmID) {
-        this.alarmUtil.deleteAlarm(alarmID);
+        alarmUtil.deleteAlarm(alarmID);
     }
 
     @ReactMethod
     public void deleteRepeatingAlarm(int alarmID) {
-        this.alarmUtil.deleteRepeatingAlarm(alarmID);
+        alarmUtil.deleteRepeatingAlarm(alarmID);
     }
 
     @ReactMethod
@@ -98,10 +98,10 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             Bundle bundle = Arguments.toBundle(details);
             AlarmModel alarm = AlarmModel.fromBundle(bundle);
 
-            int id = this.alarmDB.insert(alarm);
+            int id = alarmDB.insert(alarm);
             alarm.setId(id);
 
-            this.alarmUtil.sendNotification(alarm);
+            alarmUtil.sendNotification(alarm);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not send notification", e);
         }
@@ -109,21 +109,21 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
     @ReactMethod
     public void removeFiredNotification(int id) {
-        this.alarmUtil.removeFiredNotification(id);
+        alarmUtil.removeFiredNotification(id);
     }
 
     @ReactMethod
     public void removeAllFiredNotifications() {
-        this.alarmUtil.removeAllFiredNotifications();
+        alarmUtil.removeAllFiredNotifications();
     }
 
     @ReactMethod
     public void getScheduledAlarms(Promise promise) throws JSONException {
-        ArrayList<AlarmModel> alarms = this.alarmUtil.getAlarms();
+        ArrayList<AlarmModel> alarms = alarmUtil.getAlarms();
         WritableArray array = Arguments.createArray();
         Gson gson = new Gson();
         for (AlarmModel alarm : alarms) {
-            WritableMap alarmMap = this.alarmUtil.convertJsonToMap(new JSONObject(gson.toJson(alarm)));
+            WritableMap alarmMap = alarmUtil.convertJsonToMap(new JSONObject(gson.toJson(alarm)));
             array.pushMap(alarmMap);
         }
         promise.resolve(array);
@@ -141,11 +141,11 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
             try {
                 if (bundle != null) {
                     int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
-                    this.alarmUtil.removeFiredNotification(alarmId);
-                    this.alarmUtil.cancelOnceAlarm(alarmId);
+                    alarmUtil.removeFiredNotification(alarmId);
+                    alarmUtil.cancelOnceAlarm(alarmId);
 
                     WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
-                    this.mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                             .emit("OnNotificationOpened", response);
                 }
             } catch (Exception e) {
@@ -175,8 +175,8 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
                 getCurrentActivity().setIntent(new Intent());
 
                 int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
-                this.alarmUtil.removeFiredNotification(alarmId);
-                this.alarmUtil.cancelOnceAlarm(alarmId);
+                alarmUtil.removeFiredNotification(alarmId);
+                alarmUtil.cancelOnceAlarm(alarmId);
 
                 return;
             }
