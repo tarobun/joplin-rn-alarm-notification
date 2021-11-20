@@ -34,7 +34,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                     AlarmModel alarm = alarmDB.getAlarm(id);
                     alarmUtil.sendNotification(alarm);
                     alarmUtil.setBootReceiver();
-                    Log.i(Constants.TAG, "alarm started: " + id.toString());
+                    Log.i(Constants.TAG, "alarm started: " + id);
                 } catch (Exception e) {
                     Log.e(Constants.TAG, "Failed to add alarm", e);
                 }
@@ -55,7 +55,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 try {
                     AlarmModel alarm = alarmDB.getAlarm(id);
                     alarmUtil.snoozeAlarm(alarm);
-                    Log.i(Constants.TAG, "alarm snoozed: " + id.toString());
+                    Log.i(Constants.TAG, "alarm snoozed: " + id);
 
                     alarmUtil.removeFiredNotification(id);
                 } catch (Exception e) {
@@ -67,7 +67,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 id = intent.getExtras().getInt("AlarmId");
 
                 try {
-                    Log.i(Constants.TAG, "Cancel alarm: " + id.toString());
+                    Log.i(Constants.TAG, "Cancel alarm: " + id);
 
                     // emit notification dismissed
                     // TODO also send all user-provided args back
