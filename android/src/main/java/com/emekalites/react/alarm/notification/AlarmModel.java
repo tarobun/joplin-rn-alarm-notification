@@ -22,7 +22,7 @@ public class AlarmModel implements Serializable {
     private int month;
     private int year;
 
-    private int alarmId;
+    private int notificationId;
     private String title;
     private String message;
     private String channel;
@@ -108,12 +108,12 @@ public class AlarmModel implements Serializable {
         this.year = year;
     }
 
-    public int getAlarmId() {
-        return alarmId;
+    public int getNotificationId() {
+        return notificationId;
     }
 
-    public void setAlarmId(int alarmId) {
-        this.alarmId = alarmId;
+    public void setNotificationId(int notificationId) {
+        this.notificationId = notificationId;
     }
 
     public String getTitle() {
@@ -331,7 +331,7 @@ public class AlarmModel implements Serializable {
                 ", day=" + day +
                 ", month=" + month +
                 ", year=" + year +
-                ", alarmId=" + alarmId +
+                ", notificationId=" + notificationId +
                 ", title='" + title + "\'" +
                 ", message='" + message + "\'" +
                 ", channel='" + channel + "\'" +
@@ -364,7 +364,7 @@ public class AlarmModel implements Serializable {
         AlarmModel alarm = new AlarmModel();
 
         long time = System.currentTimeMillis() / 1000;
-        alarm.setAlarmId((int) time);
+        alarm.setNotificationId((int) time);
 
         alarm.setActive(1);
         alarm.setAutoCancel(bundle.getBoolean("auto_cancel", true));

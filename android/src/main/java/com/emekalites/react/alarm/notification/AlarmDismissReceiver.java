@@ -12,7 +12,7 @@ public class AlarmDismissReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         try {
-            int id = intent.getExtras().getInt(Constants.NOTIFICATION_ID);
+            int id = intent.getExtras().getInt(Constants.NOTIFICATION_ALARM_ID);
             if (ANModule.getReactAppContext() != null) {
                 // TODO also send all user-provided args back
                 ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -23,7 +23,7 @@ public class AlarmDismissReceiver extends BroadcastReceiver {
             alarmUtil.removeFiredNotification(id);
             alarmUtil.cancelOnceAlarm(id);
         } catch (Exception e) {
-            Log.e(Constants.TAG, "Exception when handling notification dismiss. " + e);
+            Log.e(Constants.TAG, "Exception when handling notification dismiss: " + e);
         }
     }
 }

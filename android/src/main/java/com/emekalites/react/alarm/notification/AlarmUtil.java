@@ -93,13 +93,13 @@ class AlarmUtil {
         Log.i(Constants.TAG, "Set alarm " + alarm);
 
         Calendar calendar = alarm.getAlarmDateTime();
-        int alarmId = alarm.getAlarmId();
+        int notificationId = alarm.getNotificationId();
 
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("intentType", ADD_INTENT);
         intent.putExtra("PendingId", alarm.getId());
 
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, 0);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, notificationId, intent, 0);
         AlarmManager alarmManager = this.getAlarmManager();
 
         String scheduleType = alarm.getScheduleType();
@@ -134,8 +134,8 @@ class AlarmUtil {
 
         long time = System.currentTimeMillis() / 1000;
 
-        int alarmId = (int) time;
-        alarm.setAlarmId(alarmId);
+        int notificationId = (int) time;
+        alarm.setNotificationId(notificationId);
         // TODO looks like this sets a new id and then tries to update the row in DB
         // how's that supposed to work?
         alarmDB.update(alarm);
@@ -144,7 +144,7 @@ class AlarmUtil {
         intent.putExtra("intentType", ADD_INTENT);
         intent.putExtra("PendingId", alarm.getId());
 
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, 0);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, notificationId, intent, 0);
         AlarmManager alarmManager = this.getAlarmManager();
 
         String scheduleType = alarm.getScheduleType();
@@ -235,10 +235,10 @@ class AlarmUtil {
     void stopAlarm(AlarmModel alarm) {
         AlarmManager alarmManager = this.getAlarmManager();
 
-        int alarmId = alarm.getAlarmId();
+        int noticationId = alarm.getNotificationId();
 
         Intent intent = new Intent(context, AlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, noticationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(alarmIntent);
 
         alarmDB.delete(alarm.getId());
@@ -273,10 +273,10 @@ class AlarmUtil {
                 PackageManager.DONT_KILL_APP);
     }
 
-    private PendingIntent createOnDismissedIntent(Context context, int notificationId) {
+    private PendingIntent createOnDismissedIntent(Context context, int alarmId) {
         Intent intent = new Intent(context, AlarmDismissReceiver.class);
-        intent.putExtra(Constants.NOTIFICATION_ID, notificationId);
-        return PendingIntent.getBroadcast(context.getApplicationContext(), notificationId, intent, 0);
+        intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarmId);
+        return PendingIntent.getBroadcast(context.getApplicationContext(), alarmId, intent, 0);
     }
 
     void sendNotification(AlarmModel alarm) {
@@ -289,7 +289,7 @@ class AlarmUtil {
             }
 
             NotificationManager mNotificationManager = getNotificationManager();
-            int notificationID = alarm.getAlarmId();
+            int notificationId = alarm.getNotificationId();
 
             // title
             String title = alarm.getTitle();
@@ -331,10 +331,10 @@ class AlarmUtil {
             intent.setAction(Constants.NOTIFICATION_ACTION_CLICK);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-            intent.putExtra(Constants.NOTIFICATION_ID, alarm.getId());
+            intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarm.getId());
             intent.putExtra("data", alarm.getData());
 
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelID)
                     .setSmallIcon(smallIconResId)
@@ -396,14 +396,14 @@ class AlarmUtil {
                 Intent dismissIntent = new Intent(context, AlarmReceiver.class);
                 dismissIntent.setAction(NOTIFICATION_ACTION_DISMISS);
                 dismissIntent.putExtra("AlarmId", alarm.getId());
-                PendingIntent pendingDismiss = PendingIntent.getBroadcast(context, notificationID, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingDismiss = PendingIntent.getBroadcast(context, notificationId, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Action dismissAction = new NotificationCompat.Action(android.R.drawable.ic_lock_idle_alarm, "DISMISS", pendingDismiss);
                 mBuilder.addAction(dismissAction);
 
                 Intent snoozeIntent = new Intent(context, AlarmReceiver.class);
                 snoozeIntent.setAction(NOTIFICATION_ACTION_SNOOZE);
                 snoozeIntent.putExtra("SnoozeAlarmId", alarm.getId());
-                PendingIntent pendingSnooze = PendingIntent.getBroadcast(context, notificationID, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingSnooze = PendingIntent.getBroadcast(context, notificationId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Action snoozeAction = new NotificationCompat.Action(R.drawable.ic_snooze, "SNOOZE", pendingSnooze);
                 mBuilder.addAction(snoozeAction);
             }
@@ -428,10 +428,10 @@ class AlarmUtil {
 
             String tag = alarm.getTag();
             if (tag != null && !tag.equals("")) {
-                mNotificationManager.notify(tag, notificationID, notification);
+                mNotificationManager.notify(tag, notificationId, notification);
             } else {
-                mNotificationManager.notify(notificationID, notification);
-                Log.i(Constants.TAG, "Notification done with notication id: " + notificationID);
+                mNotificationManager.notify(notificationId, notification);
+                Log.i(Constants.TAG, "Sent notification with notification id: " + notificationId);
             }
         } catch (Exception e) {
             Log.e(Constants.TAG, "Failed to send notification", e);
@@ -441,9 +441,9 @@ class AlarmUtil {
     void removeFiredNotification(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
-            int alarmId = alarm.getAlarmId();
-            getNotificationManager().cancel(alarmId);
-            Log.i(Constants.TAG, "Removed fired notification " + id + " with alarmId: " + alarmId);
+            int notificationId = alarm.getNotificationId();
+            getNotificationManager().cancel(notificationId);
+            Log.i(Constants.TAG, "Removed fired alarm " + id + " with notificationId: " + notificationId);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not remove fired notification with id " + id, e);
         }
