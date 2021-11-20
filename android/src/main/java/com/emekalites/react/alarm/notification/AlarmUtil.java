@@ -346,7 +346,7 @@ class AlarmUtil {
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
                     .setSound(null)
-                    .setDeleteIntent(createOnDismissedIntent(context, alarm.getId()));
+                    .setDeleteIntent(createOnDismissedIntent(context, alarm.getAlarmId()));
 
             if (alarm.isPlaySound()) {
                 // TODO use user-supplied sound if available
