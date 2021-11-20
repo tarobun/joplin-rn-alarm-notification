@@ -11,16 +11,17 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 public class AlarmDismissReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
         try {
-            int notificationId = intent.getExtras().getInt(Constants.NOTIFICATION_ID);
+            int id = intent.getExtras().getInt(Constants.NOTIFICATION_ID);
             if (ANModule.getReactAppContext() != null) {
                 // TODO also send all user-provided args back
                 ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("OnNotificationDismissed", "{\"id\": \"" + notificationId + "\"}");
+                        .emit("OnNotificationDismissed", "{\"id\": \"" + id + "\"}");
             }
-            alarmUtil.removeFiredNotification(notificationId);
-            alarmUtil.doCancelAlarm(notificationId);
+
+            AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
+            alarmUtil.removeFiredNotification(id);
+            alarmUtil.doCancelAlarm(id);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Exception when handling notification dismiss. " + e);
         }
