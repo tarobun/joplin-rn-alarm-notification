@@ -430,8 +430,8 @@ class AlarmUtil {
             if (tag != null && !tag.equals("")) {
                 mNotificationManager.notify(tag, notificationID, notification);
             } else {
-                Log.i(Constants.TAG, "Notification done");
                 mNotificationManager.notify(notificationID, notification);
+                Log.i(Constants.TAG, "Notification done with notication id: " + notificationID);
             }
         } catch (Exception e) {
             Log.e(Constants.TAG, "Failed to send notification", e);
