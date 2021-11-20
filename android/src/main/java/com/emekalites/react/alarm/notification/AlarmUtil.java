@@ -159,7 +159,7 @@ class AlarmUtil {
                 }
                 break;
 
-            case "repeat"
+            case "repeat":
                 long interval = this.getInterval(alarm.getInterval(), alarm.getIntervalValue());
                 alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, alarmIntent);
                 break;
