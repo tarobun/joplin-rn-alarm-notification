@@ -140,7 +140,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
                 if (bundle != null) {
                     int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
                     alarmUtil.removeFiredNotification(alarmId);
-                    alarmUtil.doCancelAlarm(alarmId);
+                    alarmUtil.cancelOnceAlarm(alarmId);
 
                     WritableMap response = Arguments.fromBundle(bundle.getBundle("data"));
                     mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -174,7 +174,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
                 int alarmId = bundle.getInt(Constants.NOTIFICATION_ID);
                 alarmUtil.removeFiredNotification(alarmId);
-                alarmUtil.doCancelAlarm(alarmId);
+                alarmUtil.cancelOnceAlarm(alarmId);
 
                 return;
             }
