@@ -14,68 +14,76 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent != null) {
-            Log.d(Constants.TAG, "Received intent URI: " + intent.toUri(0));
-            
-            final AlarmDatabase alarmDB = new AlarmDatabase(context);
-            AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
+        if (intent == null) {
+            return;
+        }
 
-            try {
-                String intentType = intent.getExtras().getString("intentType");
-                if (Constants.ADD_INTENT.equals(intentType)) {
-                    int id = intent.getExtras().getInt("PendingId");
-                    try {
-                        AlarmModel alarm = alarmDB.getAlarm(id);
-                        alarmUtil.sendNotification(alarm);
-                        alarmUtil.setBootReceiver();
+        Log.d(Constants.TAG, "Received intent URI: " + intent.toUri(0));
+        
+        final AlarmDatabase alarmDB = new AlarmDatabase(context);
+        AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
 
-                        ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
-                        Log.d(Constants.TAG, "alarm start: " + alarm.toString() + ", alarms left: " + alarms.size());
-                    } catch (Exception e) {
-                        Log.e(Constants.TAG, "Failed to add alarm", e);
-                    }
+        String intentType = intent.getExtras().getString("intentType");
+        Log.i(Constants.TAG, "INTENT_TYPE: " + intentType);
+
+        switch(intentType) {
+            case Constants.ADD_INTENT:
+                int id = intent.getExtras().getInt("PendingId");
+
+                try {
+                    AlarmModel alarm = alarmDB.getAlarm(id);
+                    alarmUtil.sendNotification(alarm);
+                    alarmUtil.setBootReceiver();
+                    Log.i(Constants.TAG, "alarm started: " + id.toString());
+                } catch (Exception e) {
+                    Log.e(Constants.TAG, "Failed to add alarm", e);
                 }
-            } catch (Exception e) {
-                Log.e(Constants.TAG, "Received invalid intent", e);
-            }
+                break;
 
-            String action = intent.getAction();
-            if (action != null) {
-                Log.i(Constants.TAG, "ACTION: " + action);
-                switch (action) {
-                    case Constants.NOTIFICATION_ACTION_SNOOZE:
-                        int id = intent.getExtras().getInt("SnoozeAlarmId");
+            default:
+                Log.e(Constants.TAG, "Received unknown intentType: " + intentType);
+                break;
+        }
 
-                        try {
-                            AlarmModel alarm = alarmDB.getAlarm(id);
-                            alarmUtil.snoozeAlarm(alarm);
-                            Log.i(Constants.TAG, "alarm snoozed: " + alarm.toString());
+        String action = intent.getAction();
+        Log.i(Constants.TAG, "ACTION: " + action);
 
-                            alarmUtil.removeFiredNotification(alarm.getId());
-                        } catch (Exception e) {
-                            Log.e(Constants.TAG, "Failed to snooze alarm", e);
-                        }
-                        break;
+        switch (action) {
+            case Constants.NOTIFICATION_ACTION_SNOOZE:
+                int id = intent.getExtras().getInt("SnoozeAlarmId");
 
-                    case Constants.NOTIFICATION_ACTION_DISMISS:
-                        id = intent.getExtras().getInt("AlarmId");
+                try {
+                    AlarmModel alarm = alarmDB.getAlarm(id);
+                    alarmUtil.snoozeAlarm(alarm);
+                    Log.i(Constants.TAG, "alarm snoozed: " + id.toString());
 
-                        try {
-                            AlarmModel alarm = alarmDB.getAlarm(id);
-                            Log.i(Constants.TAG, "Cancel alarm: " + alarm.toString());
-
-                            // emit notification dismissed
-                            // TODO also send all user-provided args back
-                            ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("OnNotificationDismissed", "{\"id\": \"" + alarm.getId() + "\"}");
-
-                            alarmUtil.removeFiredNotification(alarm.getId());
-                            alarmUtil.cancelAlarm(alarm, false); // TODO why false?
-                        } catch (Exception e) {
-                            Log.e(Constants.TAG, "Failed to dismiss alarm", e);
-                        }
-                        break;
+                    alarmUtil.removeFiredNotification(id);
+                } catch (Exception e) {
+                    Log.e(Constants.TAG, "Failed to snooze alarm", e);
                 }
-            }
+                break;
+
+            case Constants.NOTIFICATION_ACTION_DISMISS:
+                id = intent.getExtras().getInt("AlarmId");
+
+                try {
+                    Log.i(Constants.TAG, "Cancel alarm: " + id.toString());
+
+                    // emit notification dismissed
+                    // TODO also send all user-provided args back
+                    ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("OnNotificationDismissed", "{\"id\": \"" + id + "\"}");
+
+                    alarmUtil.removeFiredNotification(id);
+                    alarmUtil.cancelOnceAlarm(id);
+                } catch (Exception e) {
+                    Log.e(Constants.TAG, "Failed to dismiss alarm", e);
+                }
+                break;
+
+            default:
+                Log.e(Constants.TAG, "Received unknown action: " + action);
+                break;
         }
     }
 }
