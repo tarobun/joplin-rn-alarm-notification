@@ -81,7 +81,7 @@ class AlarmUtil {
     }
 
     void setBootReceiver() {
-        ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
+        ArrayList<AlarmModel> alarms = this.alarmDB.getActiveAlarmList();
         if (alarms.size() > 0) {
             enableBootReceiver(context);
         } else {
@@ -138,7 +138,7 @@ class AlarmUtil {
         alarm.setAlarmId(alarmId);
         // TODO looks like this sets a new id and then tries to update the row in DB
         // how's that supposed to work?
-        alarmDB.update(alarm);
+        this.alarmDB.update(alarm);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("intentType", ADD_INTENT);
@@ -201,7 +201,7 @@ class AlarmUtil {
 
     void deleteAlarm(int id) {
         try {
-            AlarmModel alarm = alarmDB.getAlarm(id);
+            AlarmModel alarm = this.alarmDB.getAlarm(id);
             this.stopAlarm(alarm);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not delete alarm with id " + id, e);
@@ -210,7 +210,7 @@ class AlarmUtil {
 
     void deleteRepeatingAlarm(int id) {
         try {
-            AlarmModel alarm = alarmDB.getAlarm(id);
+            AlarmModel alarm = this.alarmDB.getAlarm(id);
             String scheduleType = alarm.getScheduleType();
             if (scheduleType.equals("repeat")) {
                 this.stopAlarm(alarm);
@@ -224,7 +224,7 @@ class AlarmUtil {
         try {
             String scheduleType = alarm.getScheduleType();
             if (scheduleType.equals("once")) {
-                AlarmModel alarm = alarmDB.getAlarm(id);
+                AlarmModel alarm = this.alarmDB.getAlarm(id);
                 this.stopAlarm(alarm);
             }
         } catch (Exception e) {
@@ -241,7 +241,7 @@ class AlarmUtil {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(alarmIntent);
 
-        alarmDB.delete(alarm.getId());
+        this.alarmDB.delete(alarm.getId());
 
         this.setBootReceiver();
     }
@@ -440,7 +440,7 @@ class AlarmUtil {
 
     void removeFiredNotification(int id) {
         try {
-            AlarmModel alarm = alarmDB.getAlarm(id);
+            AlarmModel alarm = this.alarmDB.getAlarm(id);
             getNotificationManager().cancel(alarm.getAlarmId());
             Log.i(Constants.TAG, "Removed fired notification: " + alarm.getAlarmId().toString());
         } catch (Exception e) {
@@ -453,7 +453,7 @@ class AlarmUtil {
     }
 
     ArrayList<AlarmModel> getAlarms() {
-        return alarmDB.getActiveAlarmList();
+        return this.alarmDB.getActiveAlarmList();
     }
 
     WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {

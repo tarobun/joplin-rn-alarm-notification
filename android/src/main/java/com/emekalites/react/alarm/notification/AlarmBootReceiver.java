@@ -22,7 +22,7 @@ public class AlarmBootReceiver extends BroadcastReceiver {
             try (AlarmDatabase alarmDB = new AlarmDatabase(context)) {
                 AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
 
-                ArrayList<AlarmModel> alarms = alarmDB.getAlarmList(1);
+                ArrayList<AlarmModel> alarms = alarmDB.getActiveAlarmList();
                 for (AlarmModel alarm : alarms) {
                     alarmUtil.setAlarm(alarm);
                 }

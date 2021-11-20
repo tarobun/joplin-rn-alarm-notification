@@ -120,7 +120,7 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
         return getAlarmList(1);
     }
     
-    ArrayList<AlarmModel> getInctiveAlarmList() {
+    ArrayList<AlarmModel> getInactiveAlarmList() {
         return getAlarmList(0);
     }
 
@@ -155,9 +155,5 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
         }
 
         return alarms;
-    }
-
-    ArrayList<AlarmModel> getAlarmList() {
-        return getAlarmList(0);
     }
 }
