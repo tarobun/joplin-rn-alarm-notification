@@ -325,12 +325,7 @@ public class AlarmModel implements Serializable {
     public String toString() {
         return "AlarmModel{" +
                 "id=" + id +
-                ", second=" + second +
-                ", minute=" + minute +
-                ", hour=" + hour +
-                ", day=" + day +
-                ", month=" + month +
-                ", year=" + year +
+                ", [alarmTime]=" + year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second +
                 ", notificationId=" + notificationId +
                 ", title='" + title + "\'" +
                 ", message='" + message + "\'" +
