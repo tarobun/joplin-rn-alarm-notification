@@ -113,7 +113,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.setAction(action);
         intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarm.getId());
-        return PendingIntent.getBroadcast(context, alarm.notificationId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, alarm.getNotificationId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private void sendNotification(Context context, NotificationManager notificationManager, AlarmModel alarm) {
