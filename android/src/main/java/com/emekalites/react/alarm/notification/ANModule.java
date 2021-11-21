@@ -93,21 +93,6 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     }
 
     @ReactMethod
-    public void sendNotification(ReadableMap details) {
-        try {
-            Bundle bundle = Arguments.toBundle(details);
-            AlarmModel alarm = AlarmModel.fromBundle(bundle);
-
-            int id = alarmDB.insert(alarm);
-            alarm.setId(id);
-
-            alarmUtil.sendNotification(alarm);
-        } catch (Exception e) {
-            Log.e(Constants.TAG, "Could not send notification", e);
-        }
-    }
-
-    @ReactMethod
     public void removeFiredNotification(int id) {
         alarmUtil.removeFiredNotification(id);
     }
@@ -130,11 +115,10 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     }
 
     @Override
-    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
     }
 
-    @Override
     public void onNewIntent(Intent intent) {
         if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction())) {
             Bundle bundle = intent.getExtras();

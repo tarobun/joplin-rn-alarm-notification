@@ -2,7 +2,6 @@ export default ReactNativeAN;
 
 declare namespace ReactNativeAN {
     function scheduleAlarm(details: any): Promise<any>;
-    function sendNotification(details: any): void;
     function deleteAlarm(id: any): void;
     function deleteRepeatingAlarm(id: any): void;
     function stopAlarmSound(): any;

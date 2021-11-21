@@ -67,22 +67,6 @@ ReactNativeAN.scheduleAlarm = async (details) => {
 	return await RNAlarmNotification.scheduleAlarm(data);
 };
 
-ReactNativeAN.sendNotification = (details) => {
-	const data = {
-		...details,
-		has_button: false,
-		vibrate: details.vibrate || true,
-		play_sound: details.play_sound || true,
-		schedule_type: details.schedule_type || 'once',
-		volume: details.volume || 0.5,
-		sound_name: details.sound_name || '',
-		snooze_interval: details.snooze_interval || 1,
-		data: details.data || '',
-	};
-
-	RNAlarmNotification.sendNotification(data);
-};
-
 ReactNativeAN.deleteAlarm = (id) => {
 	if (!id) {
 		throw new Error('id is required to delete alarm');
