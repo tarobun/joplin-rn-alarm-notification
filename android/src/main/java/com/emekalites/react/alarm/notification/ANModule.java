@@ -115,10 +115,11 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
 
     }
 
+    @Override
     public void onNewIntent(Intent intent) {
         if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction())) {
             Bundle bundle = intent.getExtras();
