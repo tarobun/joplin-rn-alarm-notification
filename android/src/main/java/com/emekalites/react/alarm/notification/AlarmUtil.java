@@ -428,8 +428,10 @@ class AlarmUtil {
 
             String tag = alarm.getTag();
             if (tag != null && !tag.equals("")) {
+                Log.i(Constants.TAG, "Notify with tag and notification id: " + notificationId);
                 mNotificationManager.notify(tag, notificationId, notification);
             } else {
+                Log.i(Constants.TAG, "Notify without tag and notification id: " + notificationId);
                 mNotificationManager.notify(notificationId, notification);
             }
             Log.i(Constants.TAG, "Sent notification with notification id: " + notificationId);
