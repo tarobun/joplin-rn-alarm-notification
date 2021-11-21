@@ -17,7 +17,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.gson.Gson;
 
@@ -132,9 +131,8 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
                 alarmUtil.removeFiredNotification(id);
                 alarmUtil.cancelOnceAlarm(id);
 
-                WritableMap data = Arguments.fromBundle(bundle.getBundle("data"));
                 mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("OnNotificationOpened", data);
+                        .emit("OnNotificationOpened", "{\"id\": \"" + id + "\"}");
             } catch (Exception e) {
                 Log.e(Constants.TAG, "Couldn't convert bundle to JSON", e);
             }
@@ -149,14 +147,12 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
         }
 
         Intent intent = getCurrentActivity().getIntent();
-        if (intent == null) {
+        if (intent == null || intent.getExtras() == null) {
             promise.resolve(null);
             return;
         }
 
-        if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction()) &&
-                intent.getExtras() != null) {
-
+        if (Constants.NOTIFICATION_ACTION_CLICK.equals(intent.getAction())) {
             Bundle bundle = intent.getExtras();
             WritableMap data = Arguments.fromBundle(bundle.getBundle("data"));
             promise.resolve(data);
