@@ -109,7 +109,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         return PendingIntent.getBroadcast(context.getApplicationContext(), alarmId, intent, 0);
     }
 
-    private PendingIntent createPendingIntent(Context context, String action, Alarm alarm) {
+    private PendingIntent createPendingIntent(Context context, String action, AlarmModel alarm) {
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.setAction(action);
         intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarm.getId());
