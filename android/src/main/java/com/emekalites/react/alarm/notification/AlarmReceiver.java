@@ -41,6 +41,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         
         final AlarmDatabase alarmDB = new AlarmDatabase(context);
         AlarmUtil alarmUtil = new AlarmUtil((Application) context.getApplicationContext());
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         String intentType = intent.getExtras().getString("intentType");
         Log.i(Constants.TAG, "INTENT_TYPE: " + intentType);
@@ -48,23 +49,21 @@ public class AlarmReceiver extends BroadcastReceiver {
         if(Constants.ADD_INTENT.equals(intentType)) {
             int id = intent.getExtras().getInt("PendingId");
             AlarmModel alarm = alarmDB.getAlarm(id);
-            sendNotification(context, alarm);
+            sendNotification(context, notificationManager, alarm);
             return;
         }
 
         String action = intent.getAction();
         Log.i(Constants.TAG, "ACTION: " + action);
 
+        int id = intent.getExtras().getInt("AlarmId");
+        AlarmModel alarm = alarmDB.getAlarm(id);
+        notificationManager.cancel(alarm.getNotificationId());
+
         switch (action) {
             case Constants.NOTIFICATION_ACTION_SNOOZE:
-                int id = intent.getExtras().getInt("SnoozeAlarmId");
-
                 try {
-                    alarmUtil.removeFiredNotification(id);
-
-                    AlarmModel alarm = alarmDB.getAlarm(id);
                     alarmUtil.snoozeAlarm(alarm);
-
                     Log.i(Constants.TAG, "alarm snoozed: " + id);
                 } catch (Exception e) {
                     Log.e(Constants.TAG, "Failed to snooze alarm", e);
@@ -72,11 +71,8 @@ public class AlarmReceiver extends BroadcastReceiver {
                 break;
 
             case Constants.NOTIFICATION_ACTION_DISMISS:
-                id = intent.getExtras().getInt("AlarmId");
-
                 try {
                     Log.i(Constants.TAG, "Cancel alarm: " + id);
-                    alarmUtil.removeFiredNotification(id);
                     alarmUtil.cancelOnceAlarm(id);
 
                     // emit notification dismissed
@@ -107,17 +103,20 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
     }
 
-    private NotificationManager getNotificationManager(Context context) {
-        return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-    }
-
     private PendingIntent createOnDismissedIntent(Context context, int alarmId) {
         Intent intent = new Intent(context, AlarmDismissReceiver.class);
         intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarmId);
         return PendingIntent.getBroadcast(context.getApplicationContext(), alarmId, intent, 0);
     }
 
-    private void sendNotification(Context context, AlarmModel alarm) {
+    private PendingIntent createPendingIntent(Context context, String action, int alarmId, int notificationId) {
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.setAction(action);
+        intent.putExtra("AlarmId", alarmId);
+        return PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private void sendNotification(Context context, NotificationManager notificationManager, AlarmModel alarm) {
         try {
             Class<?> intentClass = getMainActivityClass(context);
 
@@ -125,9 +124,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                 Log.e(Constants.TAG, "No activity class found for the notification");
                 return;
             }
-
-            NotificationManager mNotificationManager = getNotificationManager(context);
-            int notificationId = alarm.getNotificationId();
 
             // title
             String title = alarm.getTitle();
@@ -169,10 +165,9 @@ public class AlarmReceiver extends BroadcastReceiver {
             intent.setAction(Constants.NOTIFICATION_ACTION_CLICK);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-            intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarm.getId());
+            int alarmId = alarm.getId();
+            intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarmId);
             intent.putExtra("data", alarm.getData());
-
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelID)
                     .setSmallIcon(smallIconResId)
@@ -184,7 +179,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
                     .setSound(null)
-                    .setDeleteIntent(createOnDismissedIntent(context, alarm.getId()));
+                    .setDeleteIntent(createOnDismissedIntent(context, alarmId));
 
             if (alarm.isPlaySound()) {
                 // TODO use user-supplied sound if available
@@ -192,7 +187,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
 
             long vibration = alarm.getVibration();
-
             long[] vibrationPattern = vibration == 0 ? DEFAULT_VIBRATE_PATTERN : new long[]{0, vibration, 1000, vibration};
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -213,7 +207,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                     mChannel.enableVibration(true);
                 }
 
-                mNotificationManager.createNotificationChannel(mChannel);
+                notificationManager.createNotificationChannel(mChannel);
                 mBuilder.setChannelId(channelID);
             } else {
                 // set vibration
@@ -228,20 +222,16 @@ public class AlarmReceiver extends BroadcastReceiver {
                 }
             }
 
+            int notificationId = alarm.getNotificationId();
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(pendingIntent);
 
             if (alarm.isHasButton()) {
-                Intent dismissIntent = new Intent(context, AlarmReceiver.class);
-                dismissIntent.setAction(NOTIFICATION_ACTION_DISMISS);
-                dismissIntent.putExtra("AlarmId", alarm.getId());
-                PendingIntent pendingDismiss = PendingIntent.getBroadcast(context, notificationId, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingDismiss = createPendingIntent(context, NOTIFICATION_ACTION_DISMISS, notificationId, alarmId);
                 NotificationCompat.Action dismissAction = new NotificationCompat.Action(android.R.drawable.ic_lock_idle_alarm, "DISMISS", pendingDismiss);
                 mBuilder.addAction(dismissAction);
 
-                Intent snoozeIntent = new Intent(context, AlarmReceiver.class);
-                snoozeIntent.setAction(NOTIFICATION_ACTION_SNOOZE);
-                snoozeIntent.putExtra("SnoozeAlarmId", alarm.getId());
-                PendingIntent pendingSnooze = PendingIntent.getBroadcast(context, notificationId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingSnooze = createPendingIntent(context, NOTIFICATION_ACTION_SNOOZE, notificationId, alarmId);
                 NotificationCompat.Action snoozeAction = new NotificationCompat.Action(R.drawable.ic_snooze, "SNOOZE", pendingSnooze);
                 mBuilder.addAction(snoozeAction);
             }
@@ -266,11 +256,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             String tag = alarm.getTag();
             if (tag != null && !tag.equals("")) {
-                Log.i(Constants.TAG, "Notify with tag and notification id: " + notificationId);
-                mNotificationManager.notify(tag, notificationId, notification);
+                notificationManager.notify(tag, notificationId, notification);
             } else {
-                Log.i(Constants.TAG, "Notify without tag and notification id: " + notificationId);
-                mNotificationManager.notify(notificationId, notification);
+                notificationManager.notify(notificationId, notification);
             }
             Log.i(Constants.TAG, "Sent notification with notification id: " + notificationId);
         } catch (Exception e) {
