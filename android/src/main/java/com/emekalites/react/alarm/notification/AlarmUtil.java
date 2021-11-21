@@ -106,7 +106,7 @@ class AlarmUtil {
         switch(scheduleType) {
             case "once":
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
                 } else {
@@ -431,8 +431,8 @@ class AlarmUtil {
                 mNotificationManager.notify(tag, notificationId, notification);
             } else {
                 mNotificationManager.notify(notificationId, notification);
-                Log.i(Constants.TAG, "Sent notification with notification id: " + notificationId);
             }
+            Log.i(Constants.TAG, "Sent notification with notification id: " + notificationId);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Failed to send notification", e);
         }
