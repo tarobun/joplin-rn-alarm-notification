@@ -56,7 +56,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         Log.i(Constants.TAG, "ACTION: " + action);
 
-        int id = intent.getExtras().getInt("AlarmId");
+        int id = intent.getExtras().getInt(Constants.NOTIFICATION_ALARM_ID);
         AlarmModel alarm = alarmDB.getAlarm(id);
         notificationManager.cancel(alarm.getNotificationId());
 
@@ -109,11 +109,11 @@ public class AlarmReceiver extends BroadcastReceiver {
         return PendingIntent.getBroadcast(context.getApplicationContext(), alarmId, intent, 0);
     }
 
-    private PendingIntent createPendingIntent(Context context, String action, int alarmId, int notificationId) {
+    private PendingIntent createPendingIntent(Context context, String action, Alarm alarm) {
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.setAction(action);
-        intent.putExtra("AlarmId", alarmId);
-        return PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        intent.putExtra(Constants.NOTIFICATION_ALARM_ID, alarm.getId());
+        return PendingIntent.getBroadcast(context, alarm.notificationId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private void sendNotification(Context context, NotificationManager notificationManager, AlarmModel alarm) {
@@ -227,11 +227,11 @@ public class AlarmReceiver extends BroadcastReceiver {
             mBuilder.setContentIntent(pendingIntent);
 
             if (alarm.isHasButton()) {
-                PendingIntent pendingDismiss = createPendingIntent(context, NOTIFICATION_ACTION_DISMISS, notificationId, alarmId);
+                PendingIntent pendingDismiss = createPendingIntent(context, NOTIFICATION_ACTION_DISMISS, alarm);
                 NotificationCompat.Action dismissAction = new NotificationCompat.Action(android.R.drawable.ic_lock_idle_alarm, "DISMISS", pendingDismiss);
                 mBuilder.addAction(dismissAction);
 
-                PendingIntent pendingSnooze = createPendingIntent(context, NOTIFICATION_ACTION_SNOOZE, notificationId, alarmId);
+                PendingIntent pendingSnooze = createPendingIntent(context, NOTIFICATION_ACTION_SNOOZE, alarm);
                 NotificationCompat.Action snoozeAction = new NotificationCompat.Action(R.drawable.ic_snooze, "SNOOZE", pendingSnooze);
                 mBuilder.addAction(snoozeAction);
             }
