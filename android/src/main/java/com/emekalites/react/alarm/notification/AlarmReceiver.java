@@ -60,11 +60,12 @@ public class AlarmReceiver extends BroadcastReceiver {
                 int id = intent.getExtras().getInt("SnoozeAlarmId");
 
                 try {
+                    alarmUtil.removeFiredNotification(id);
+
                     AlarmModel alarm = alarmDB.getAlarm(id);
                     alarmUtil.snoozeAlarm(alarm);
-                    Log.i(Constants.TAG, "alarm snoozed: " + id);
 
-                    alarmUtil.removeFiredNotification(id);
+                    Log.i(Constants.TAG, "alarm snoozed: " + id);
                 } catch (Exception e) {
                     Log.e(Constants.TAG, "Failed to snooze alarm", e);
                 }
@@ -75,14 +76,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                 try {
                     Log.i(Constants.TAG, "Cancel alarm: " + id);
+                    alarmUtil.removeFiredNotification(id);
+                    alarmUtil.cancelOnceAlarm(id);
 
                     // emit notification dismissed
                     // TODO also send all user-provided args back
                     ANModule.getReactAppContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("OnNotificationDismissed", "{\"id\": \"" + id + "\"}");
-
-                    alarmUtil.removeFiredNotification(id);
-                    alarmUtil.cancelOnceAlarm(id);
                 } catch (Exception e) {
                     Log.e(Constants.TAG, "Failed to dismiss alarm", e);
                 }
