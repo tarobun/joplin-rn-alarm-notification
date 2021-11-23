@@ -51,7 +51,9 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
         String selectQuery = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_ID + " = " + _id;
 
         try (Cursor cursor = db.rawQuery(selectQuery, null)) {
-            cursor.moveToFirst();
+            if (!cursor.moveToFirst()) {
+                return alarm;
+            }
 
             int id = cursor.getInt(0);
             String data = cursor.getString(1);
@@ -123,21 +125,23 @@ public class AlarmDatabase extends SQLiteOpenHelper implements AutoCloseable {
         ArrayList<AlarmModel> alarms = new ArrayList<>();
 
         try (Cursor cursor = db.rawQuery(selectQuery, null)) {
-            if (cursor.moveToFirst()) {
-                do {
-                    int id = cursor.getInt(0);
-                    String data = cursor.getString(1);
-                    int active = cursor.getInt(2);
-
-                    Log.d(Constants.TAG, "get alarm (list) -> id:" + id + ", active:" + active + ", " + data);
-
-                    AlarmModel alarm = gson.fromJson(data, AlarmModel.class);
-                    alarm.setId(id);
-                    alarm.setActive(active);
-
-                    alarms.add(alarm);
-                } while (cursor.moveToNext());
+            if (!cursor.moveToFirst()) {
+                return alarms;
             }
+
+            do {
+                int id = cursor.getInt(0);
+                String data = cursor.getString(1);
+                int active = cursor.getInt(2);
+
+                Log.d(Constants.TAG, "get alarm (list) -> id:" + id + ", active:" + active + ", " + data);
+
+                AlarmModel alarm = gson.fromJson(data, AlarmModel.class);
+                alarm.setId(id);
+                alarm.setActive(active);
+
+                alarms.add(alarm);
+            } while (cursor.moveToNext());
         } catch (Exception e) {
             Log.e(Constants.TAG, "getAlarmList: exception cause " + e.getCause() + " message " + e.getMessage());
         }
