@@ -174,6 +174,10 @@ class AlarmUtil {
     void deleteAlarm(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
+            if (alarm == null) {
+                Log.w(Constants.TAG, "Cannot delete alarm as alarm id " + id + " doesn't exist");
+                return;
+            }
             this.stopAlarm(alarm);
         } catch (Exception e) {
             Log.e(Constants.TAG, "Could not delete alarm with id " + id, e);
@@ -183,6 +187,11 @@ class AlarmUtil {
     void deleteRepeatingAlarm(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
+            if (alarm == null) {
+                Log.w(Constants.TAG, "Cannot delete repeating alarm as alarm id " + id + " doesn't exist");
+                return;
+            }
+
             String scheduleType = alarm.getScheduleType();
             if (scheduleType.equals("repeat")) {
                 this.stopAlarm(alarm);
@@ -195,6 +204,11 @@ class AlarmUtil {
     void deleteOnceAlarm(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
+            if (alarm == null) {
+                Log.w(Constants.TAG, "Cannot delete once alarm as alarm id " + id + " doesn't exist");
+                return;
+            }
+
             String scheduleType = alarm.getScheduleType();
             if (scheduleType.equals("once")) {
                 this.stopAlarm(alarm);
@@ -248,6 +262,10 @@ class AlarmUtil {
     void removeFiredNotification(int id) {
         try {
             AlarmModel alarm = alarmDB.getAlarm(id);
+            if (alarm == null) {
+                Log.w(Constants.TAG, "Cannot remove notification as alarm id " + id + " doesn't exist");
+                return;
+            }
             int notificationId = alarm.getNotificationId();
             getNotificationManager().cancel(notificationId);
             Log.i(Constants.TAG, "Removed fired alarm " + id + " with notificationId: " + notificationId);
