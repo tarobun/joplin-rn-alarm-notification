@@ -104,7 +104,7 @@ public class ANModule extends ReactContextBaseJavaModule implements ActivityEven
 
     @ReactMethod
     public void getScheduledAlarms(Promise promise) throws JSONException {
-        ArrayList<AlarmModel> alarms = alarmUtil.getAlarms();
+        ArrayList<AlarmModel> alarms = alarmDB.getActiveAlarmList();
         WritableArray array = Arguments.createArray();
         Gson gson = new Gson();
         for (AlarmModel alarm : alarms) {

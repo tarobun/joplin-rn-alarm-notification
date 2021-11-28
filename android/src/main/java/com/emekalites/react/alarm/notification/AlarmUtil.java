@@ -278,10 +278,6 @@ class AlarmUtil {
         getNotificationManager().cancelAll();
     }
 
-    ArrayList<AlarmModel> getAlarms() {
-        return alarmDB.getActiveAlarmList();
-    }
-
     WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
         WritableMap map = new WritableNativeMap();
 
