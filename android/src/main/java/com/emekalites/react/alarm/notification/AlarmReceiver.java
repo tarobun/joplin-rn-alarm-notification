@@ -191,34 +191,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             // Android >= version Oreo - set channel properties
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel mChannel = new NotificationChannel(channelID, "Alarm Notify", NotificationManager.IMPORTANCE_HIGH);
-                mChannel.enableLights(true);
-
-                // set color
-                String color = alarm.getColor();
-                if (color != null && !color.equals("")) {
-                    mChannel.setLightColor(Color.parseColor(color));
-                }
-
-                // set vibration
-                if (alarm.isVibrate()) {
-                    mChannel.setVibrationPattern(vibrationPattern);
-                    mChannel.enableVibration(true);
-                }
-
-                // set sound
-                if (alarm.isPlaySound()) {
-                    AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                            .build();
-                    mChannel.setSound(soundUri, audioAttributes);
-                }
-
-                if (mChannel.canBypassDnd()) {
-                    mChannel.setBypassDnd(alarm.isBypassDnd());
-                }
-
+                NotificationChannel mChannel = CreateNotificationChannel(channelID, "Alarm Notify");
                 notificationManager.createNotificationChannel(mChannel);
                 mBuilder.setChannelId(channelID);
             } else {
@@ -281,5 +254,37 @@ public class AlarmReceiver extends BroadcastReceiver {
         } catch (Exception e) {
             Log.e(Constants.TAG, "Failed to send notification", e);
         }
+    }
+
+    NotificationChannel CreateNotificationChannel(String channelID, CharSequence name) {
+        NotificationChannel mChannel = new NotificationChannel(channelID, name, NotificationManager.IMPORTANCE_HIGH);
+        mChannel.enableLights(true);
+
+        // set color
+        String color = alarm.getColor();
+        if (color != null && !color.equals("")) {
+            mChannel.setLightColor(Color.parseColor(color));
+        }
+
+        // set vibration
+        if (alarm.isVibrate()) {
+            mChannel.setVibrationPattern(vibrationPattern);
+            mChannel.enableVibration(true);
+        }
+
+        // set sound
+        if (alarm.isPlaySound()) {
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build();
+            mChannel.setSound(soundUri, audioAttributes);
+        }
+
+        if (mChannel.canBypassDnd()) {
+            mChannel.setBypassDnd(alarm.isBypassDnd());
+        }
+
+        return mChannel;
     }
 }
