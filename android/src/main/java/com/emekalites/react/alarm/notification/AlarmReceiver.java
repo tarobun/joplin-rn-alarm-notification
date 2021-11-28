@@ -191,7 +191,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             // Android >= version Oreo - set channel properties
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel mChannel = CreateNotificationChannel(channelID, "Alarm Notify");
+                NotificationChannel mChannel = CreateNotificationChannel(channelID, "Alarm Notify", alarm, vibrationPattern, soundUri);
                 notificationManager.createNotificationChannel(mChannel);
                 mBuilder.setChannelId(channelID);
             } else {
@@ -256,7 +256,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
     }
 
-    NotificationChannel CreateNotificationChannel(String channelID, CharSequence name) {
+    NotificationChannel CreateNotificationChannel(String channelID, CharSequence name, AlarmModel alarm, long[] vibrationPattern, Uri soundUri) {
         NotificationChannel mChannel = new NotificationChannel(channelID, name, NotificationManager.IMPORTANCE_HIGH);
         mChannel.enableLights(true);
 
