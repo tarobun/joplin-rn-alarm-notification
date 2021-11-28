@@ -184,7 +184,10 @@ public class AlarmReceiver extends BroadcastReceiver {
             long vibration = alarm.getVibration();
             long[] vibrationPattern = vibration == 0 ? DEFAULT_VIBRATE_PATTERN : new long[]{0, vibration, 1000, vibration};
 
-            // Android version O - need to set on channel
+            // TODO use user-supplied sound if available
+            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            // Android >= version Oreo - set channel properties
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel mChannel = new NotificationChannel(channelID, "Alarm Notify", NotificationManager.IMPORTANCE_HIGH);
                 mChannel.enableLights(true);
@@ -203,8 +206,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                 // set sound
                 if (alarm.isPlaySound()) {
-                    // TODO use user-supplied sound if available
-                    Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     AudioAttributes audioAttributes = new AudioAttributes.Builder()
                             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                             .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -232,9 +233,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                 // set sound
                 if (alarm.isPlaySound()) {
-                    // TODO use user-supplied sound if available
-                    Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    mBuilder.setSound(, AudioManager.STREAM_NOTIFICATION);
+                    mBuilder.setSound(soundUri, AudioManager.STREAM_NOTIFICATION);
                 }
             }
 
