@@ -217,15 +217,20 @@ class AlarmUtil {
     }
 
     void stopAlarm(AlarmModel alarm) {
-        AlarmManager alarmManager = this.getAlarmManager();
+        int alarmId = alarm.getId();
+        Log.i(Constants.TAG, "Stopping alarm id " + alarmId);
 
-        int noticationId = alarm.getNotificationId();
+        int notificationId = alarm.getNotificationId();
+        Log.i(Constants.TAG, "Cancelling notification id " + notificationId);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, noticationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager alarmManager = this.getAlarmManager();
         alarmManager.cancel(alarmIntent);
 
-        alarmDB.delete(alarm.getId());
+        Log.i(Constants.TAG, "Deleting alarm id " + alarmId);
+        alarmDB.delete(alarmId);
 
         this.setBootReceiver();
     }
