@@ -108,8 +108,6 @@ class AlarmUtil {
 
         int notificationId = (int) time;
         alarm.setNotificationId(notificationId);
-        // TODO looks like this sets a new id and then tries to update the row in DB
-        // how's that supposed to work?
         alarmDB.update(alarm);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
