@@ -223,8 +223,15 @@ class AlarmUtil {
         int notificationId = alarm.getNotificationId();
         Log.i(Constants.TAG, "Cancelling notification id " + notificationId);
 
+        NotificationManager notificationManager = this.getNotificationManager();
+        notificationManager.cancel(notificationId);
+
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Log.i(Constants.TAG, "Cancelling alarm id " + alarmId);
         AlarmManager alarmManager = this.getAlarmManager();
-        alarmManager.cancel(notificationId);
+        alarmManager.cancel(alarmIntent);
 
         Log.i(Constants.TAG, "Deleting alarm id " + alarmId);
         alarmDB.delete(alarmId);
