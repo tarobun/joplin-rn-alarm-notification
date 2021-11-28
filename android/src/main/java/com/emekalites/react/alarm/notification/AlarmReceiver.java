@@ -181,44 +181,60 @@ public class AlarmReceiver extends BroadcastReceiver {
                     .setSound(null)
                     .setDeleteIntent(createOnDismissedIntent(context, alarmId));
 
-            if (alarm.isPlaySound()) {
-                // TODO use user-supplied sound if available
-                mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), AudioManager.STREAM_NOTIFICATION);
-            }
-
             long vibration = alarm.getVibration();
             long[] vibrationPattern = vibration == 0 ? DEFAULT_VIBRATE_PATTERN : new long[]{0, vibration, 1000, vibration};
 
+            // Android version O - need to set on channel
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel mChannel = new NotificationChannel(channelID, "Alarm Notify", NotificationManager.IMPORTANCE_HIGH);
                 mChannel.enableLights(true);
 
+                // set color
                 String color = alarm.getColor();
                 if (color != null && !color.equals("")) {
                     mChannel.setLightColor(Color.parseColor(color));
+                }
+
+                // set vibration
+                if (alarm.isVibrate()) {
+                    mChannel.setVibrationPattern(vibrationPattern);
+                    mChannel.enableVibration(true);
+                }
+
+                // set sound
+                if (alarm.isPlaySound()) {
+                    // TODO use user-supplied sound if available
+                    Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                            .build();
+                    mChannel.setSound(soundUri, audioAttributes);
                 }
 
                 if (mChannel.canBypassDnd()) {
                     mChannel.setBypassDnd(alarm.isBypassDnd());
                 }
 
-                if (alarm.isVibrate()) {
-                    mChannel.setVibrationPattern(vibrationPattern);
-                    mChannel.enableVibration(true);
-                }
-
                 notificationManager.createNotificationChannel(mChannel);
                 mBuilder.setChannelId(channelID);
             } else {
+                // set color
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    String color = alarm.getColor();
+                    if (color != null && !color.equals("")) {
+                        mBuilder.setColor(Color.parseColor(color));
+                    }
+                }
+
                 // set vibration
                 mBuilder.setVibrate(alarm.isVibrate() ? vibrationPattern : null);
-            }
 
-            //color
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                String color = alarm.getColor();
-                if (color != null && !color.equals("")) {
-                    mBuilder.setColor(Color.parseColor(color));
+                // set sound
+                if (alarm.isPlaySound()) {
+                    // TODO use user-supplied sound if available
+                    Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    mBuilder.setSound(, AudioManager.STREAM_NOTIFICATION);
                 }
             }
 
