@@ -157,11 +157,10 @@ public class AlarmReceiver extends BroadcastReceiver {
             // TODO move to AlarmModel constructor?
             int smallIconResId;
             String smallIcon = alarm.getSmallIcon();
-            if (smallIcon != null && !smallIcon.equals("")) {
-                smallIconResId = res.getIdentifier(smallIcon, "mipmap", packageName);
-            } else {
-                smallIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
+            if (smallIcon == null || smallIcon.equals("")) {
+                smallIcon = "ic_launcher";
             }
+            smallIconResId = res.getIdentifier(smallIcon, "mipmap", packageName);
 
             Intent intent = new Intent(context, intentClass);
             intent.setAction(Constants.NOTIFICATION_ACTION_CLICK);
