@@ -182,8 +182,9 @@ public class AlarmReceiver extends BroadcastReceiver {
                     .setSound(null)
                     .setDeleteIntent(createOnDismissedIntent(context, alarmId));
 
-            long vibration = alarm.getVibration();
-            long[] vibrationPattern = vibration == 0 ? DEFAULT_VIBRATE_PATTERN : new long[]{0, vibration, 1000, vibration};
+            long[] vibrationPattern = alarm.getVibrationPattern();
+            if (vibrationPattern.length == 0)
+                vibrationPattern = DEFAULT_VIBRATE_PATTERN;
 
             // TODO use user-supplied sound if available
             Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -207,7 +208,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                 // set sound
                 if (alarm.isPlaySound()) {
-                    mBuilder.setSound(soundUri, AudioManager.STREAM_NOTIFICATION);
+                    mBuilder.setSound(soundUri, AudioManager.STREAM_ALARM);
                 }
             }
 

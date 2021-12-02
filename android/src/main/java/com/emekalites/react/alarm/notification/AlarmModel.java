@@ -29,7 +29,7 @@ public class AlarmModel implements Serializable {
     private String ticker;
     private boolean autoCancel;
     private boolean vibrate;
-    private int vibration;
+    private long[] vibrationPattern;
     private String smallIcon;
     private String largeIcon;
     private boolean playSound;
@@ -164,12 +164,12 @@ public class AlarmModel implements Serializable {
         this.vibrate = vibrate;
     }
 
-    public int getVibration() {
-        return vibration;
+    public long[] getVibrationPattern() {
+        return vibrationPattern;
     }
 
-    public void setVibration(int vibration) {
-        this.vibration = vibration;
+    public void setVibrationPattern(long[] vibrationPattern) {
+        this.vibrationPattern = vibrationPattern;
     }
 
     public String getSmallIcon() {
@@ -333,7 +333,7 @@ public class AlarmModel implements Serializable {
                 ", ticker='" + ticker + "\'" +
                 ", autoCancel=" + autoCancel +
                 ", vibrate=" + vibrate +
-                ", vibration=" + vibration +
+                ", vibrationPattern=" + Stream.of(vibrationPattern).map(String::valueOf).collect(Collectors.joining(",")) +
                 ", smallIcon='" + smallIcon + "\'" +
                 ", largeIcon='" + largeIcon + "\'" +
                 ", playSound=" + playSound +
@@ -365,9 +365,7 @@ public class AlarmModel implements Serializable {
         alarm.setAutoCancel(bundle.getBoolean("auto_cancel", true));
         alarm.setChannel(bundle.getString("channel", "my_channel_id"));
         alarm.setColor(bundle.getString("color", "red"));
-
         alarm.setData(bundle.getString("data"));
-
         alarm.setInterval(bundle.getString("repeat_interval", "hourly"));
         alarm.setLargeIcon(bundle.getString("large_icon", ""));
         alarm.setLoopSound(bundle.getBoolean("loop_sound", false));
@@ -383,11 +381,16 @@ public class AlarmModel implements Serializable {
         alarm.setTitle(bundle.getString("title", "My Notification Title"));
         alarm.setVibrate(bundle.getBoolean("vibrate", true));
         alarm.setHasButton(bundle.getBoolean("has_button", false));
-        alarm.setVibration((int) bundle.getDouble("vibration", 100.0));
         alarm.setUseBigText(bundle.getBoolean("use_big_text", false));
         alarm.setVolume(bundle.getDouble("volume", 0.5));
         alarm.setIntervalValue((int) bundle.getDouble("interval_value", 1));
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
+
+        String vibrationPattern = bundle.getString("vibration_pattern");
+        List<Long> list = new ArrayList<Long>();
+        for (String s : vibrationPattern.split(","))
+            list.add(Long.parseLong(s));
+        alarm.setVibrationPattern(list.toArray());
 
         String datetime = bundle.getString("fire_date");
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.ENGLISH);
