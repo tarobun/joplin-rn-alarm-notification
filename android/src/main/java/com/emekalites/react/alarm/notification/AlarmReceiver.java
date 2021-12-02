@@ -275,7 +275,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (alarm.isPlaySound()) {
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ALARM)
                     .build();
             mChannel.setSound(soundUri, audioAttributes);
         }
