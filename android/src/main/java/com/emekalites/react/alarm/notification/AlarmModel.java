@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 
 public class AlarmModel implements Serializable {
@@ -32,7 +33,7 @@ public class AlarmModel implements Serializable {
     private String ticker;
     private boolean autoCancel;
     private boolean vibrate;
-    private long[] vibrationPattern;
+    private Long[] vibrationPattern;
     private String smallIcon;
     private String largeIcon;
     private boolean playSound;
@@ -167,11 +168,11 @@ public class AlarmModel implements Serializable {
         this.vibrate = vibrate;
     }
 
-    public long[] getVibrationPattern() {
+    public Long[] getVibrationPattern() {
         return vibrationPattern;
     }
 
-    public void setVibrationPattern(long[] vibrationPattern) {
+    public void setVibrationPattern(Long[] vibrationPattern) {
         this.vibrationPattern = vibrationPattern;
     }
 
@@ -390,7 +391,7 @@ public class AlarmModel implements Serializable {
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
 
         String vibrationPattern = bundle.getString("vibration_pattern");
-        ArrayList<long> list = new ArrayList<long>();
+        List<Long> list = new ArrayList<Long>();
         for (String s : vibrationPattern.split(","))
             list.add(Long.parseLong(s));
         alarm.setVibrationPattern(list.toArray());
