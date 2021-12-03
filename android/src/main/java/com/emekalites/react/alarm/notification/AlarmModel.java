@@ -335,7 +335,7 @@ public class AlarmModel implements Serializable {
                 ", ticker='" + ticker + "\'" +
                 ", autoCancel=" + autoCancel +
                 ", vibrate=" + vibrate +
-                ", vibrationPattern=[" + TextUtils.join("; ", vibrationPattern) + "]" +
+                ", vibrationPattern=[" + TextUtils.join(";", Arrays.asList(vibrationPattern)) + "]" +
                 ", smallIcon='" + smallIcon + "\'" +
                 ", largeIcon='" + largeIcon + "\'" +
                 ", playSound=" + playSound +
