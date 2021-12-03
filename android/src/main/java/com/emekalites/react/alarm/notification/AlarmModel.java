@@ -392,9 +392,14 @@ public class AlarmModel implements Serializable {
 
         String vibrationPattern = bundle.getString("vibration_pattern");
         List<Long> list = new ArrayList<Long>();
-        for (String s : vibrationPattern.split(","))
+        for (String s : vibrationPattern.split(",")) {
             list.add(Long.parseLong(s));
-        alarm.setVibrationPattern(list.toArray());
+        }
+        long[] pattern = new long[list.length];
+        for (int i = 0; i < list.length; i++) {
+            pattern[i] = list.get(i);
+        }
+        alarm.setVibrationPattern(pattern);
 
         String datetime = bundle.getString("fire_date");
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.ENGLISH);
