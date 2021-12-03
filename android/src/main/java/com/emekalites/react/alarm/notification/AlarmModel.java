@@ -1,13 +1,14 @@
 package com.emekalites.react.alarm.notification;
 
 import android.os.Bundle;
-import android.text;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
@@ -388,7 +389,7 @@ public class AlarmModel implements Serializable {
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
 
         String vibrationPattern = bundle.getString("vibration_pattern");
-        List<Long> list = new ArrayList<Long>();
+        List<Long> list = new List<Long>();
         for (String s : vibrationPattern.split(","))
             list.add(Long.parseLong(s));
         alarm.setVibrationPattern(list.toArray());
