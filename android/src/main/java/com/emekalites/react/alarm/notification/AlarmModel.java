@@ -389,7 +389,7 @@ public class AlarmModel implements Serializable {
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
 
         String vibrationPattern = bundle.getString("vibration_pattern");
-        List<Long> list = new ArrayList<Long>();
+        ArrayList<Long> list = new ArrayList<Long>();
         for (String s : vibrationPattern.split(","))
             list.add(Long.parseLong(s));
         alarm.setVibrationPattern(list.toArray());
