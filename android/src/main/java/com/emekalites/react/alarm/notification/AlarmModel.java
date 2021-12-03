@@ -1,6 +1,7 @@
 package com.emekalites.react.alarm.notification;
 
 import android.os.Bundle;
+import android.text;
 
 import androidx.annotation.NonNull;
 
@@ -333,7 +334,7 @@ public class AlarmModel implements Serializable {
                 ", ticker='" + ticker + "\'" +
                 ", autoCancel=" + autoCancel +
                 ", vibrate=" + vibrate +
-                ", vibrationPattern=" + Stream.of(vibrationPattern).map(String::valueOf).collect(Collectors.joining(",")) +
+                ", vibrationPattern=[" + TextUtils.join("; ", vibrationPattern) + "]" +
                 ", smallIcon='" + smallIcon + "\'" +
                 ", largeIcon='" + largeIcon + "\'" +
                 ", playSound=" + playSound +
