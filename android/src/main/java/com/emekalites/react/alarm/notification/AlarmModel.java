@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -389,9 +390,9 @@ public class AlarmModel implements Serializable {
         alarm.setBypassDnd(bundle.getBoolean("bypass_dnd", false));
 
         String vibrationPattern = bundle.getString("vibration_pattern");
-        ArrayList<Long> list = new ArrayList<Long>();
+        ArrayList<long> list = new ArrayList<long>();
         for (String s : vibrationPattern.split(","))
-            list.add(Long.parseLong(s));
+            list.add(long.parseLong(s));
         alarm.setVibrationPattern(list.toArray());
 
         String datetime = bundle.getString("fire_date");
